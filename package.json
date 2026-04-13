@@ -1,0 +1,29 @@
+{
+  "name": "cs-546-final-project",
+  "version": "1.0.0",
+  "description": "Final Project for CS 546",
+  "homepage": "https://github.com/Ashleni/CS546#readme",
+  "bugs": {
+    "url": "https://github.com/Ashleni/CS546/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ashleni/CS546.git"
+  },
+  "license": "ISC",
+  "author": "Andrew Tarnoski, Marissa Bonsignore, Raynelis Villa, Shreya Roy",
+  "type": "module",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node app.js",
+    "seed": "node ./tasks/seed.js"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "express": "^5.2.1",
+    "express-handlebars": "^9.0.1",
+    "express-session": "^1.19.0",
+    "mongodb": "^7.1.1"
+  }
+}
