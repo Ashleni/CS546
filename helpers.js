@@ -8,6 +8,7 @@ Validation Functions:
   checkUsername(username)
   checkEmail(email)
   checkRole(role)
+  checkBoro(boro)
 
 Utility Functions:
   hashPassword(password)
@@ -15,7 +16,7 @@ Utility Functions:
 */
 
 import bcrypt from "bcrypt";
-import { ObjectId } from 'mongodb';
+import { ObjectId } from "mongodb";
 
 const exportedMethods = {
   async hashPassword(password) {
@@ -28,7 +29,7 @@ const exportedMethods = {
 
   checkString(strVal, varName) {
     if (!strVal) throw `Error: You must supply a ${varName}!`;
-    if (typeof strVal !== 'string') throw `Error: ${varName} must be a string!`;
+    if (typeof strVal !== "string") throw `Error: ${varName} must be a string!`;
     strVal = strVal.trim();
     if (strVal.length === 0)
       throw `Error: ${varName} cannot be an empty string or string with just spaces`;
@@ -42,11 +43,11 @@ const exportedMethods = {
     if (!id) {
       throw `Error: You must provide a ${varName}`;
     }
-    if (typeof id !== 'string') {
+    if (typeof id !== "string") {
       throw `Error:${varName} must be a string`;
     }
     id = id.trim();
-    if (id.length === 0){
+    if (id.length === 0) {
       throw `Error: ${varName} cannot be an empty string or just spaces`;
     }
     if (!ObjectId.isValid(id)) {
@@ -65,33 +66,47 @@ const exportedMethods = {
   },
 
   checkUsername(username) {
-    username = this.checkString(username, 'Username');
+    username = this.checkString(username, "Username");
     let usernameRegex = /^[A-Za-z0-9_.]{3,30}$/; // Taken from https://www.sitepoint.com/using-regular-expressions-to-check-string-length/
     if (!usernameRegex.test(username)) {
       throw `Error: Username must be 3-30 characters and can only contain alphanumeric characters, underscores, or periods`;
     }
-    return username.toLowerCase(); 
+    return username.toLowerCase();
   },
 
   checkEmail(email) {
-    email = this.checkString(email, 'Email');
+    email = this.checkString(email, "Email");
     let emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/; // Taken from https://learn.microsoft.com/en-us/dotnet/standard/base-types/how-to-verify-that-strings-are-in-valid-email-format
-    if (!emailRegex.test(email)){
+    if (!emailRegex.test(email)) {
       throw `Error: Email must be a valid email address`;
-
     }
-    return email.toLowerCase(); 
+    return email.toLowerCase();
   },
 
   checkRole(role) {
-    role = this.checkString(role, 'Role').toLowerCase();
-    if (role !== 'admin' && role !== 'user'){
+    role = this.checkString(role, "Role").toLowerCase();
+    if (role !== "admin" && role !== "user") {
       throw `Error: Role must be either "admin" or "user"`;
     }
     return role;
-  }
+  },
 
+  checkBoro(boro) {
+    if (typeof boro !== "string") throw "Error: boro must be type string!";
 
+    const validBoros = [
+      "manhattan",
+      "bronx",
+      "brooklyn",
+      "queens",
+      "staten island",
+    ];
+
+    boro = boro.trim().toLowerCase();
+    if (!validBoros.includes(boro)) throw "Error: Invalid boro!";
+
+    return boro;
+  },
 };
 
 export default exportedMethods;
