@@ -30,51 +30,48 @@ const exportedMethods = {
   },
 
   currDate() {
-
     let today = new Date();
 
     let mm = today.getMonth() + 1;
     let dd = today.getDate();
     let yyyy = today.getFullYear();
-    
-    mm = mm < 10 ? '0' + mm : mm;
-    dd = dd < 10 ? '0' + dd : dd;
-    
+
+    mm = mm < 10 ? "0" + mm : mm;
+    dd = dd < 10 ? "0" + dd : dd;
+
     return `${mm}/${dd}/${yyyy}`;
   },
 
   checkMessage(message) {
     if (!message) {
-    throw 'message parameter needs to have valid value';
+      throw "message parameter needs to have valid value";
     }
 
-    if (typeof message != 'string') {
-    throw 'message parameter must be string';
+    if (typeof message != "string") {
+      throw "message parameter must be string";
     }
 
     message = message.trim();
 
-    if (message.length == 0){
-        throw 'message must not be empty';
+    if (message.length == 0) {
+      throw "message must not be empty";
     }
 
     let repeatingChar = null;
     let occurance = 1;
 
-    for (let i = 0; i < message.length-1; i++) {
-        let currChar = message[i];
-        let nextChar = message[i+1];
-        if (currChar == repeatingChar) {       
-            occurance += 1;
-            if (occurance == 5) {
-                throw 'message parameter repeats the same character >= 5 times';
-            }
+    for (let i = 0; i < message.length - 1; i++) {
+      let currChar = message[i];
+      let nextChar = message[i + 1];
+      if (currChar == repeatingChar) {
+        occurance += 1;
+        if (occurance == 5) {
+          throw "message parameter repeats the same character >= 5 times";
         }
-        else if (currChar == nextChar && currChar != repeatingChar) {
-            repeatingChar = currChar;
-            occurance = 2;
-        }
-        else occurance = 1;
+      } else if (currChar == nextChar && currChar != repeatingChar) {
+        repeatingChar = currChar;
+        occurance = 2;
+      } else occurance = 1;
     }
 
     return message;
@@ -224,8 +221,8 @@ const exportedMethods = {
 
     const year = Number(date.substring(6));
     const day = Number(date.substring(3, 5));
-    if (isNaN(year)) throw `'${variableName}' is an invalid date!`;
-    if (isNaN(day)) throw `'${variableName}' is an invalid date!`;
+    if (isNaN(year) || isNaN(day))
+      throw `'${variableName}' is an invalid date!`;
 
     if (month === "02") {
       if ((year % 4 === 0 && year % 100 !== 0) || year % 400 === 0) {
@@ -237,10 +234,8 @@ const exportedMethods = {
     }
 
     if (days31.indexOf(month) !== -1) {
-      // month has 31 days
       if (day < 1 || day > 31) throw `'${variableName}' is an invalid date!`;
     } else {
-      // month has 30 days
       if (day < 1 || day > 30) throw `'${variableName}' is an invalid date!`;
     }
 
