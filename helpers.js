@@ -9,6 +9,8 @@ Validation Functions:
   checkEmail(email)
   checkRole(role)
   checkBoro(boro)
+  checkZipCode(zip)
+  checkPhoneNumber(phone)
 
 Utility Functions:
   hashPassword(password)
@@ -106,6 +108,36 @@ const exportedMethods = {
     if (!validBoros.includes(boro)) throw "Error: Invalid boro!";
 
     return boro;
+  },
+
+  checkZipCode(zip) {
+    if (typeof zip !== "string") throw "Error: zip must be type string!";
+
+    zip = zip.trim();
+    if (zip.length !== 5) throw "Error: zip has invalid length!";
+
+    // check for valid zip format
+    const validNums = "0123456789";
+    for (let i = 0; i < zip.length; i++) {
+      if (!validNums.includes(zip[i]))
+        throw "Error: zip must only contain numbers!";
+    }
+
+    return zip;
+  },
+
+  checkPhoneNumber(phone) {
+    if (typeof phone !== "string") throw "Error: phone must be type string!";
+
+    phone = phone.trim();
+    if (phone.length !== 10) throw "Error: phone must be 10 digits!";
+
+    // check for numbers only
+    const validNums = "0123456789";
+    for (let i = 0; i < phone.length; i++) {
+      if (!validNums.includes(phone[i]))
+        throw "Error: phone must only contain numbers!";
+    }
   },
 };
 
