@@ -190,6 +190,62 @@ const exportedMethods = {
         throw "Error: phone must only contain numbers!";
     }
   },
+
+  checkDate(date, variableName) {
+    if (typeof date !== "string")
+      throw `Error: ${variableName} must be type string!`;
+    date = date.trim();
+
+    if (date.length !== 10 || date[2] !== "/" || date[5] !== "/") {
+      throw `'${variableName}' has invalid format!`;
+    }
+
+    const validMonths = [
+      "01",
+      "02",
+      "03",
+      "04",
+      "05",
+      "06",
+      "07",
+      "08",
+      "09",
+      "10",
+      "11",
+      "12",
+    ];
+
+    const month = date.substring(0, 2);
+    if (validMonths.indexOf(month) === -1) {
+      throw `'${variableName}' is an invalid date!`;
+    }
+
+    const days31 = ["01", "03", "05", "07", "08", "10", "12"];
+
+    const year = Number(date.substring(6));
+    const day = Number(date.substring(3, 5));
+    if (isNaN(year)) throw `'${variableName}' is an invalid date!`;
+    if (isNaN(day)) throw `'${variableName}' is an invalid date!`;
+
+    if (month === "02") {
+      if ((year % 4 === 0 && year % 100 !== 0) || year % 400 === 0) {
+        // leap year
+        if (day < 1 || day > 29) throw `'${variableName}' is an invalid date!`;
+      } else {
+        if (day < 1 || day > 28) throw `'${variableName}' is an invalid date!`;
+      }
+    }
+
+    if (days31.indexOf(month) !== -1) {
+      // month has 31 days
+      if (day < 1 || day > 31) throw `'${variableName}' is an invalid date!`;
+    } else {
+      // month has 30 days
+      if (day < 1 || day > 30) throw `'${variableName}' is an invalid date!`;
+    }
+
+    return date;
+  },
 };
 
 export default exportedMethods;
