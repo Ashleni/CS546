@@ -58,7 +58,6 @@ const main = async () => {
       firstName: "Alan",
       lastName: "Turing",
       username: "alan.turing",
-      email: "aturing@stevens.edu",
       role: "user",
       passwordHashed: await helpers.hashPassword("TuringMachine@1936"), // stores the hashed password
       publicFollowingRestaurants: [
@@ -92,7 +91,6 @@ const main = async () => {
       firstName: "Charlie",
       lastName: "Davis",
       username: "charlieinnyc",
-      email: "charliesd@gmail.com",
       role: "user",
       passwordHashed: await helpers.hashPassword("foodie_NYC612"), // stores the hashed password
       publicFollowingRestaurants: [],
@@ -106,7 +104,6 @@ const main = async () => {
       firstName: "Alice",
       lastName: "Smith",
       username: "aliceisawesome",
-      email: "alicesmith@nyc.gov",
       role: "admin",
       passwordHashed: await helpers.hashPassword("Testing@123"), // stores the hashed password
       publicFollowingRestaurants: [],
@@ -128,7 +125,6 @@ const main = async () => {
       firstName: "Anna",
       lastName: "Reed",
       username: "reedanna567",
-      email: "annaemail@outlook.com",
       role: "user",
       passwordHashed: await helpers.hashPassword("Password123!"), // stores the hashed password
       publicFollowingRestaurants: [],
@@ -158,7 +154,6 @@ const main = async () => {
       firstName: "John",
       lastName: "Miller",
       username: "doglover78",
-      email: "johnnyboy@aol.com",
       role: "user",
       passwordHashed: await helpers.hashPassword("ILoveDogs!89"), // stores the hashed password
       publicFollowingRestaurants: [JohnsPizzeriaID, SNAFUID],
@@ -187,7 +182,7 @@ const main = async () => {
     {
       _id: OldMillCafeID,
       name: "Old Mill Cafe LLC",
-      boro: "Brooklyn",
+      boro: "brooklyn",
       address: {
         _id: new ObjectId(),
         building: "49",
@@ -195,7 +190,7 @@ const main = async () => {
         zip: "11237",
       },
       phone: "9296229278",
-      cuisine: "Coffee/Tea",
+      cuisine: "coffee/tea",
       inspections: [], // example with no inspections
       userReviews: [AlanReview1, CharlieReview1],
       userComments: [AlanComment1],
@@ -203,7 +198,7 @@ const main = async () => {
     {
       _id: JohnsPizzeriaID,
       name: `John's Pizzeria`,
-      boro: "Manhattan",
+      boro: "manhattan",
       address: {
         _id: new ObjectId(),
         building: "278",
@@ -211,7 +206,7 @@ const main = async () => {
         zip: "10014",
       },
       phone: "2122431680",
-      cuisine: "Pizza",
+      cuisine: "pizza",
       inspections: [
         // example with dropped letter grade
         {
@@ -240,7 +235,7 @@ const main = async () => {
     {
       _id: LinDaughtersID,
       name: "Lin & Daughters",
-      boro: "Manhattan",
+      boro: "manhattan",
       address: {
         _id: new ObjectId(),
         building: "181",
@@ -248,7 +243,7 @@ const main = async () => {
         zip: "10014",
       },
       phone: "5166735686",
-      cuisine: "Chinese",
+      cuisine: "chinese",
       inspections: [],
       userReviews: [AnnaReview1, JohnReview1, AlanReview2],
       userComments: [],
@@ -256,7 +251,7 @@ const main = async () => {
     {
       _id: restaurant218ID,
       name: "218 Restaurant",
-      boro: "Manhattan",
+      boro: "manhattan",
       address: {
         _id: new ObjectId(),
         building: "218220",
@@ -264,7 +259,7 @@ const main = async () => {
         zip: "10014",
       },
       phone: "2122268039",
-      cuisine: "Chinese",
+      cuisine: "chinese",
       inspections: [
         // example with improved letter grade, will flag user reviews for admin
         {
@@ -296,7 +291,7 @@ const main = async () => {
     {
       _id: KingsWokID,
       name: "King's Wok",
-      boro: "Brooklyn",
+      boro: "brooklyn",
       address: {
         _id: new ObjectId(),
         building: "261",
@@ -312,7 +307,7 @@ const main = async () => {
     {
       _id: SculptCafeID,
       name: "The Sculpt Cafe",
-      boro: "Staten Island",
+      boro: "staten island",
       address: {
         _id: new ObjectId(),
         building: "1584",
@@ -320,7 +315,7 @@ const main = async () => {
         zip: "10304",
       },
       phone: "3474660072",
-      cuisine: "Coffee/Tea",
+      cuisine: "coffee/tea",
       inspections: [],
       userReviews: [],
       userComments: [],
@@ -328,7 +323,7 @@ const main = async () => {
     {
       _id: TeaMilkID,
       name: "Tea and Milk",
-      boro: "Queens",
+      boro: "queens",
       address: {
         _id: new ObjectId(),
         building: "32-02",
@@ -336,7 +331,7 @@ const main = async () => {
         zip: "11106",
       },
       phone: "9174980618",
-      cuisine: "Coffee/Tea",
+      cuisine: "coffee/tea",
       inspections: [],
       userReviews: [],
       userComments: [],
@@ -344,7 +339,7 @@ const main = async () => {
     {
       _id: TGFlavorsID,
       name: "T & G Flavors",
-      boro: "Queens",
+      boro: "queens",
       address: {
         _id: new ObjectId(),
         building: "228-01",
@@ -352,7 +347,7 @@ const main = async () => {
         zip: "11411",
       },
       phone: "7187122956",
-      cuisine: "Caribbean",
+      cuisine: "caribbean",
       inspections: [],
       userReviews: [],
       userComments: [],
@@ -360,7 +355,7 @@ const main = async () => {
     {
       _id: SNAFUID,
       name: "SNAFU",
-      boro: "Manhattan",
+      boro: "manhattan",
       address: {
         _id: new ObjectId(),
         building: "127",
@@ -368,7 +363,7 @@ const main = async () => {
         zip: "10017",
       },
       phone: "2123179100",
-      cuisine: "American",
+      cuisine: "american",
       inspections: [],
       userReviews: [],
       userComments: [],
@@ -376,7 +371,7 @@ const main = async () => {
     {
       _id: SubwayID,
       name: "Subway",
-      boro: "Queens",
+      boro: "queens",
       address: {
         _id: new ObjectId(),
         building: "69-79",
@@ -384,7 +379,7 @@ const main = async () => {
         zip: "11378",
       },
       phone: "9174597040",
-      cuisine: "Sandwiches",
+      cuisine: "sandwiches",
       inspections: [],
       userReviews: [],
       userComments: [],

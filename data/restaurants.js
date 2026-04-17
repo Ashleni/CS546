@@ -1,6 +1,7 @@
 import { ObjectId } from "mongodb";
 import { restaurants } from "../config/mongoCollections.js";
 import helpers from "../helpers.js";
+import Fuse from "fuse.js";
 
 /**
  * Create a restaurant profile with the specified information.
@@ -571,4 +572,54 @@ export const removeRestaurant = async (id) => {
   if (!deletedRestaurant)
     throw `Error: Could not delete restaurant with id '${id}'!`;
   return { name: deletedRestaurant.name, deleted: true };
+};
+
+/**
+ * Searches the database for restaurant's matching the given arguments. Minor spelling mistakes are allowed. If only
+ * blank arguments are given, all restaurant in the database are returned.
+ * @param {string} name - The name of the restaurant(s) to search for (optional).
+ * @param {string} boro - The boro location of the restaurant(s) to search for (optional).
+ * @param {string} cuisine - The cuisine type of the restaurant(s) to search for (optional).
+ * @returns {Promise<array>} An array with the restaurant's found using the specified arguments. The array contains the
+ * restaurant ID, name, boro, and cuisine type.
+ */
+export const search = async (name = "", boro = "", cuisine = "") => {
+  if (typeof name !== "string") throw "Errow: name must be type string!";
+  if (typeof boro !== "string") throw "Errow: boro must be type string!";
+  if (typeof cuisine !== "string") throw "Errow: cuisine must be type string!";
+
+  name = name.trim();
+  boro = boro.trim();
+  cuisine = cuisine.trim().toLowerCase();
+
+  let restaurants = await getAllRestaurants();
+
+  if (boro !== "") {
+    boro = helpers.checkBoro(boro);
+    restaurants = restaurants.filter((restaurant) => restaurant.boro === boro);
+  }
+
+  if (name !== "") {
+    const fuse = new Fuse(restaurants, {
+      keys: ["name"],
+      threshold: 0.4,
+    });
+
+    const searchResults = fuse.search(name);
+
+    restaurants = searchResults.map((restaurant) => restaurant.item);
+  }
+
+  if (cuisine !== "") {
+    const fuse = new Fuse(restaurants, {
+      keys: ["cuisine"],
+      threshold: 0.4,
+    });
+
+    const searchResults = fuse.search(cuisine);
+
+    restaurants = searchResults.map((restaurant) => restaurant.item);
+  }
+
+  return restaurants;
 };
