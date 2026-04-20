@@ -4,7 +4,7 @@ import {
   } from "../config/mongoCollections.js";
 import * as helpers from '../helpers.js';
 import { getRestaurantById } from "./restaurants.js";
-import { getUserById } from "./users.js";
+import userData from "./users.js";
 import { ObjectId } from "mongodb";
 
 export const createComment = async (
@@ -19,7 +19,7 @@ export const createComment = async (
     restaurantID = helpers.checkId(restaurantID);
     
     // throws if object doesn't exist
-    const userObject = await getUserById(userID);
+    const userObject = await userData.getUserById(userID);
     const restaurantObject = await getRestaurantById(restaurantID);
 
     message = helpers.checkMessage(message);
@@ -145,7 +145,7 @@ export const patchCommentById = async (currUserId, commentId, newMessage) => {
     currUserId = helpers.checkId(currUserId);
 
     // throws if user not found
-    const userObject = await getUserById(currUserId);
+    const userObject = await userData.getUserById(currUserId);
     
     const commentCollection = await comments();
     const commentIdResult = await commentCollection.findOne({
@@ -177,7 +177,7 @@ export const removeCommentById = async (currUserId, commentId) => {
     currUserId = helpers.checkId(currUserId);
 
     // throws if user not found
-    const userObject = await getUserById(currUserId);
+    const userObject = await userData.getUserById(currUserId);
   
     // throws if comment doesn't exist
     const commentCollection = await comments();
