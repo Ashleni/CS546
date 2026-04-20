@@ -1,0 +1,41 @@
+<div id="error" class="formError">{{error}}</div>
+
+<h2>Create an Account</h2>
+
+<form action="/register" method="POST" name="signup-form" id="signup-form">
+    <label for="firstName">
+        First Name
+        <input type="text" name="firstName" id="firstName">
+    </label>
+    <label for="lastName">
+        Last Name
+        <input type="text" name="lastName" id="lastName">
+    </label>
+    <label for="username">
+        Username
+        <input type="text" name="username" id="username">
+    </label>
+    <label for="password">
+        Password
+        <input type="password" name="password" id="password">
+    </label>
+    <label for="confirmPassword">
+        Confirm Password
+        <input type="password" name="confirmPassword" id="confirmPassword">
+    </label>
+    <label for="role">
+        Account Type
+        <select name="role" id="role">
+            <option value="select">Select</option>
+            <option value="user">Regular User</option>
+            <option value="admin">Admin</option>
+        </select>
+    </label>
+    <button type="submit" name="submitButton" id="submitButton">Join Now</button> 
+</form>
+
+<a id="signinlink" href="/signin">Already have an account? Sign-in!</a>
+<a id="homelink" href="/">Home Page</a>
+
+<script src="https://code.jquery.com/jquery-3.5.1.js"
+	integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>

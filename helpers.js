@@ -241,6 +241,39 @@ const exportedMethods = {
 
     return date;
   },
+
+  checkPassword(s, varName) {
+    s = this.checkString(s, varName);
+    if (s.length < 8)
+      throw `Error: '${varName}' must be at least 8 characters!`;
+    const uppercaseLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    const numbers = "1234567890";
+    let containsUpper = false;
+    let conatinsNumber = false;
+    let containsSpecial = false;
+
+    for (let i = 0; i < s.length; i++) {
+      if (s[i] === " ") throw `Error: '${varName}' cannot contain a space!`;
+      if (!containsUpper && uppercaseLetters.includes(s[i])) {
+        containsUpper = true;
+        continue;
+      }
+      if (uppercaseLetters.toLowerCase().includes(s[i])) continue;
+      if (!conatinsNumber && numbers.includes(s[i])) {
+        conatinsNumber = true;
+        continue;
+      }
+      if (!containsSpecial) {
+        containsSpecial = true;
+        continue;
+      }
+    }
+
+    if (!(containsSpecial && conatinsNumber && containsUpper))
+      throw `Error: '${varName}' must have at least one number, one uppercase letter, and one special character!`;
+
+    return s;
+  },
 };
 
 export default exportedMethods;

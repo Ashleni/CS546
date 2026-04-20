@@ -592,6 +592,9 @@ export const search = async (name = "", boro = "", cuisine = "") => {
   boro = boro.trim();
   cuisine = cuisine.trim().toLowerCase();
 
+  if (name === "" && boro === "" && cuisine === "")
+    throw "Error: You must provide a search term!";
+
   let restaurants = await getAllRestaurants();
 
   if (boro !== "") {
