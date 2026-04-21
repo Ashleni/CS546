@@ -88,6 +88,18 @@ const exportedMethods = {
     return strVal;
   },
 
+  checkRating(rating) {
+    if (typeof rating == 'string') {
+      rating = Number(rating);
+    }
+      
+    if (!(Number.isFinite(rating)) || rating < 0) {
+        throw 'rating must be a finite number equal to or greater than 0';
+    }
+
+    return rating;
+  },
+
   // from Lecture 6.
   checkId(id, varName) {
     if (!id) {
