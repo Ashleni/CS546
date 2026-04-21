@@ -132,11 +132,11 @@ export const addCommentByRestaurant = async (restaurantId, commentId) => {
 
     if (!updatedInfo) {
         throw 'New comment could not be added';
-      }
-      
-      updatedInfo._id = updatedInfo._id.toString();
+    }
     
-      return updatedInfo;
+    updatedInfo._id = updatedInfo._id.toString();
+
+    return updatedInfo;
 };
 
 export const patchCommentById = async (currUserId, commentId, newMessage) => {
@@ -167,9 +167,9 @@ export const patchCommentById = async (currUserId, commentId, newMessage) => {
         throw 'Comment could not be edited';
     }
       
-      updatedInfo._id = updatedInfo._id.toString();
-    
-      return updatedInfo;
+    updatedInfo._id = updatedInfo._id.toString();
+
+    return updatedInfo;
 };
 
 export const removeCommentById = async (currUserId, commentId) => {  
