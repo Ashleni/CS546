@@ -16,6 +16,8 @@ removeUser(id)
 
 updateUserPatch(id, userInfo)
 
+authenticateUser(username, password)
+
 --------------------------------------
 
 Notes:
@@ -23,7 +25,6 @@ Notes:
 - rigorous checking has only been implemented for firstName, lastName, username, email, role.
   Subdocuments do not have any rigorous checking yet. 
 
-- Currently takes in passwords already hashed 
 
 - 
 
@@ -32,6 +33,7 @@ Notes:
 import { users } from '../config/mongoCollections.js';
 import { ObjectId } from 'mongodb';
 import exportedMethods from '../helpers.js';
+import bcrypt from "bcrypt";
 
 let userData = {
 
@@ -50,16 +52,15 @@ async getUserById(id) {
     return user;
 },
 
-async addUser(userData) {
-    let { firstName, lastName, username, email, role,  passwordHashed } = userData;
+async addUser(firstName, lastName, username, password, role) {
+    let passwordHashed = await exportedMethods.hashPassword(password);
 
     let newUser = {
       firstName: exportedMethods.checkName(firstName, 'First name'),
       lastName: exportedMethods.checkName(lastName, 'Last name'),
       username: exportedMethods.checkUsername(username),
-      email: exportedMethods.checkEmail(email),
       role: exportedMethods.checkRole(role),
-      passwordHashed: exportedMethods.checkString(passwordHashed, 'Password'),
+      passwordHashed,
       // No validation done yet for the following...
       publicFollowingRestaurants: [],
       privateFollowingRestaurants: [],
@@ -72,25 +73,25 @@ async addUser(userData) {
 
     // Check for duplicate usernames and emails.
     let existingUser = await userCollection.findOne({
-            username: newUser.username
+            username: newUser.username,
     });
 
     if (existingUser) {
             throw 'Username already exists';
     }
-    let existingEmail = await userCollection.findOne({
-            email: newUser.email
-    });
+    //let existingEmail = await userCollection.findOne({
+    //        email: newUser.email
+    //});
 
-    if (existingEmail) {
-            throw 'Email already exists';
-    }
+    //if (existingEmail) {
+    //        throw 'Email already exists';
+    //}
 
     let insertInfo = await userCollection.insertOne(newUser);
     if (!insertInfo.insertedId) {
         throw 'Insert failed!';
     }
-    return await this.getUserById(insertInfo.insertedId.toString());
+    return { userCreated: true };
 },
 
   // I dont see a use for this right now for our app
@@ -104,6 +105,28 @@ async removeUser(id) {
         throw `Error: Could not delete user with id of ${id}`;
     return { ...deletionInfo, deleted: true };
 },
+
+async authenticateUser(username, password) {
+    username = exportedMethods.checkUsername(username);
+
+    let userCollection = await users();
+    let user = await userCollection.findOne({username});
+    if (!user) {
+        throw "Invalid username or password";
+    }
+
+    const match = await bcrypt.compare(password, user.passwordHashed);
+    if (!match) {
+        throw "Invalid username or password";
+    }
+
+    return {
+      firstName: user.firstName,
+      lastName: user.lastName,
+      username: user.username,
+      role: user.role,
+    };
+  },
 
 async updateUserPatch(id, userInfo) {
     id = exportedMethods.checkId(id);
@@ -126,16 +149,16 @@ async updateUserPatch(id, userInfo) {
             throw 'Username already exists';
         }
     }
-    if (userInfo.email) {
-        updateFields.email = exportedMethods.checkEmail(userInfo.email);
-        let existingEmail = await userCollection.findOne({
-                email: userInfo.email
-        });
+    //if (userInfo.email) {
+    //    updateFields.email = exportedMethods.checkEmail(userInfo.email);
+    //    let existingEmail = await userCollection.findOne({
+    //            email: userInfo.email
+    //    });
 
-        if (existingEmail) {
-                throw 'Email already exists';
-        }
-    }
+    //    if (existingEmail) {
+    //            throw 'Email already exists';
+    //    }
+    //}
     if (userInfo.role) {
         updateFields.role = exportedMethods.checkRole(userInfo.role);
     }

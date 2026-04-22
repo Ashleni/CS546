@@ -2,16 +2,15 @@ import { Router } from "express";
 import helpers from "../helpers.js";
 const router = Router();
 import { users } from "../config/mongoCollections.js";
-import * as userData from "../data/users.js";
+import userData from "../data/users.js";
+import { signinGuard} from "../middleware.js";
+
 
 router
   .route("/register")
-  .get(async (req, res) => {
-    if (req.session.user) {
-      return res.render("home", { title: "Home Page" });
-    } else {
+  .get(signinGuard, async (req, res) => {
       return res.render("register", { title: "Registration Page" });
-    }
+      
   })
   .post(async (req, res) => {
     let registerInfo = req.body;
@@ -163,12 +162,9 @@ router
 
 router
   .route("/signin")
-  .get(async (req, res) => {
-    if (req.session.user) {
-      return res.render("home", { title: "Home Page" });
-    } else {
-      return res.render("signin", { title: "Sign-in Page" });
-    }
+  .get(signinGuard, async (req, res) => {
+    return res.render("signin", { title: "Sign-in Page" });
+
   })
   .post(async (req, res) => {
     let signinInfo = req.body;
@@ -189,6 +185,16 @@ router
       });
     }
 
+
+    if (!signinInfo.password) {
+      return res.status(400).render("signin", {
+        error: "Password is missing!",
+        title: "Sign-in Page",
+      });
+    }
+
+    // auth here not needed anymore
+    /*
     if (signinInfo.password) {
       try {
         signinInfo.password = helpers.checkPassword(
@@ -207,6 +213,7 @@ router
         title: "Sign-in Page",
       });
     }
+    */
 
     let confirmation;
 
@@ -231,12 +238,12 @@ router
       };
 
       return res.status(200).redirect("/home");
-    } else {
+    }/* else {
       return res.status(400).render("signin", {
         error: "Either the handle or password is invalid!",
         title: "Sign-in Page",
       });
-    }
+    }*/
   });
 
 router.route("/signout").get(async (req, res) => {

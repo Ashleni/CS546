@@ -8,7 +8,25 @@
 </head>
 
 <body>
+    <!-- NAV BAR -->
+    <nav class="navbar">
+        <a  href="/">Delicacy</a>
+        
+            {{#if user}}
+            <a href="/home">Home</a>
+            <span>Hi, {{user.firstName}}!</span>
+            <a href="/signout">Sign Out</a>
+        {{else}}
+            <a href="/signin">Sign In</a>
+            <a href="/register">Register Now</a>
+        {{/if}}
+    
+    </nav>
+    <!-- NAV BAR -->
+
+    <div class="content">
     {{{body}}}
+    </div>
 </body>
 
 </html>

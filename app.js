@@ -3,6 +3,8 @@ const app = express();
 import configRoutes from "./routes/index.js";
 import exphbs from "express-handlebars";
 import session from "express-session";
+import {handlebarsLocalVars} from "./middleware.js";
+
 
 const rewriteUnsupportedBrowserMethods = (req, res, next) => {
   // If the user posts to the server with a property called _method, rewrite the request's method
@@ -32,6 +34,8 @@ app.use(
     saveUninitialized: false,
   }),
 );
+
+app.use(handlebarsLocalVars);
 
 configRoutes(app);
 
