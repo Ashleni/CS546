@@ -3,9 +3,12 @@
         Restaurants Found
     </h1>
 
-    <h2 class="location">
-        Restaurants near {{location}}
-    </h2>
+    <h3 class="searchTerms">
+        Showing results for 
+        {{#if name}}{{name}}{{else}}restaurants{{/if}}
+        {{#if boro}}in {{boro}}{{else}}{{/if}}
+        {{#if cuisine}}with cuisine type {{cuisine}}{{else}}{{/if}}
+    </h3>
 
     <a class="search" href="/">
         Search another location

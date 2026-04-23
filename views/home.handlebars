@@ -1,15 +1,33 @@
 <main>
-    <h1>
-        Delicacy
-    </h1>
+    <h1>Delicacy</h1>
 
-    <h2>
-        Location Search
-    </h2>
+    <h2>Find Restaurants</h2>
 
-    <form action="/searchResults" method="post">
-        <label for="location">Choose your NYC Borough</label><br>
-        <input class="location" type="text" id="location" name="location"><br>
-        <input class="submit" type="submit" value="Submit">
-    </form>   
+    <p>Find restaurants by name, borough, and/or cuisine type!</p>
+
+    <form action="/searchResults" method="post" id="search-form">
+        <label for="name">
+            Restaurant Name
+            <input class="name" type="text" id="name" name="name"><br>
+        </label>
+        <label for="boro">
+            Borough Location
+            <select name="boro" id="boro">
+                <option value="select">Select Borough</option>
+                <option value="bronx">Bronx</option>
+                <option value="brooklyn">Brooklyn</option>
+                <option value="manhattan">Manhattan</option>
+                <option value="queens">Queens</option>
+                <option value="statenIsland">Staten Island</option>
+            </select>
+        </label>
+        <label for="cuisine">
+            Cuisine Type
+            <input class="cuisine" type="text" id="cuisine" name="cuisine"><br>
+        </label>
+        <button type="submit" name="submitButton" id="submitButton">Search</button> 
+    </form>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.js"
+	integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
 </main>
