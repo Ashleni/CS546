@@ -3,14 +3,12 @@ import helpers from "../helpers.js";
 const router = Router();
 import { users } from "../config/mongoCollections.js";
 import userData from "../data/users.js";
-import { signinGuard} from "../middleware.js";
-
+import { signinGuard } from "../middleware.js";
 
 router
   .route("/register")
   .get(signinGuard, async (req, res) => {
-      return res.render("register", { title: "Registration Page" });
-      
+    return res.render("register", { title: "Registration Page" });
   })
   .post(async (req, res) => {
     let registerInfo = req.body;
@@ -164,7 +162,6 @@ router
   .route("/signin")
   .get(signinGuard, async (req, res) => {
     return res.render("signin", { title: "Sign-in Page" });
-
   })
   .post(async (req, res) => {
     let signinInfo = req.body;
@@ -185,35 +182,12 @@ router
       });
     }
 
-
     if (!signinInfo.password) {
       return res.status(400).render("signin", {
         error: "Password is missing!",
         title: "Sign-in Page",
       });
     }
-
-    // auth here not needed anymore
-    /*
-    if (signinInfo.password) {
-      try {
-        signinInfo.password = helpers.checkPassword(
-          signinInfo.password,
-          "password",
-        );
-      } catch (e) {
-        return res.status(400).render("signin", {
-          error: "Password is invalid!",
-          title: "Sign-in Page",
-        });
-      }
-    } else {
-      return res.status(400).render("signin", {
-        error: "Password is missing!",
-        title: "Sign-in Page",
-      });
-    }
-    */
 
     let confirmation;
 
@@ -231,6 +205,7 @@ router
 
     if (confirmation) {
       req.session.user = {
+        _id: confirmation._id.toString(),
         firstName: confirmation.firstName,
         lastName: confirmation.lastName,
         username: confirmation.username,
@@ -238,12 +213,7 @@ router
       };
 
       return res.status(200).redirect("/home");
-    }/* else {
-      return res.status(400).render("signin", {
-        error: "Either the handle or password is invalid!",
-        title: "Sign-in Page",
-      });
-    }*/
+    }
   });
 
 router.route("/signout").get(async (req, res) => {

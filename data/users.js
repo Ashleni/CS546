@@ -30,34 +30,32 @@ Notes:
 
 */
 
-import { users } from '../config/mongoCollections.js';
-import { ObjectId } from 'mongodb';
-import exportedMethods from '../helpers.js';
+import { users } from "../config/mongoCollections.js";
+import { ObjectId } from "mongodb";
+import exportedMethods from "../helpers.js";
 import bcrypt from "bcrypt";
 
 let userData = {
-
-async getAllUsers() {
+  async getAllUsers() {
     let userCollection = await users();
     let userList = await userCollection.find({}).toArray();
     return userList;
-},
+  },
 
-
-async getUserById(id) {
+  async getUserById(id) {
     id = exportedMethods.checkId(id);
     let userCollection = await users();
     let user = await userCollection.findOne({ _id: new ObjectId(id) });
-    if (!user) throw 'Error: User not found';
+    if (!user) throw "Error: User not found";
     return user;
-},
+  },
 
-async addUser(firstName, lastName, username, password, role) {
+  async addUser(firstName, lastName, username, password, role) {
     let passwordHashed = await exportedMethods.hashPassword(password);
 
     let newUser = {
-      firstName: exportedMethods.checkName(firstName, 'First name'),
-      lastName: exportedMethods.checkName(lastName, 'Last name'),
+      firstName: exportedMethods.checkName(firstName, "First name"),
+      lastName: exportedMethods.checkName(lastName, "Last name"),
       username: exportedMethods.checkUsername(username),
       role: exportedMethods.checkRole(role),
       passwordHashed,
@@ -66,18 +64,18 @@ async addUser(firstName, lastName, username, password, role) {
       privateFollowingRestaurants: [],
       reviewsCompleted: [],
       commentsPosted: [],
-      notifications: []
+      notifications: [],
     };
 
     let userCollection = await users();
 
     // Check for duplicate usernames and emails.
     let existingUser = await userCollection.findOne({
-            username: newUser.username,
+      username: newUser.username,
     });
 
     if (existingUser) {
-            throw 'Username already exists';
+      throw "Username already exists";
     }
     //let existingEmail = await userCollection.findOne({
     //        email: newUser.email
@@ -89,38 +87,38 @@ async addUser(firstName, lastName, username, password, role) {
 
     let insertInfo = await userCollection.insertOne(newUser);
     if (!insertInfo.insertedId) {
-        throw 'Insert failed!';
+      throw "Insert failed!";
     }
     return { userCreated: true };
-},
+  },
 
   // I dont see a use for this right now for our app
-async removeUser(id) {
+  async removeUser(id) {
     id = exportedMethods.checkId(id);
     let userCollection = await users();
-    let deletionInfo = await userCollection.findOneAndDelete({ 
-        _id: new ObjectId(id) 
+    let deletionInfo = await userCollection.findOneAndDelete({
+      _id: new ObjectId(id),
     });
-    if (!deletionInfo) 
-        throw `Error: Could not delete user with id of ${id}`;
+    if (!deletionInfo) throw `Error: Could not delete user with id of ${id}`;
     return { ...deletionInfo, deleted: true };
-},
+  },
 
-async authenticateUser(username, password) {
+  async authenticateUser(username, password) {
     username = exportedMethods.checkUsername(username);
 
     let userCollection = await users();
-    let user = await userCollection.findOne({username});
+    let user = await userCollection.findOne({ username });
     if (!user) {
-        throw "Invalid username or password";
+      throw "Invalid username or password";
     }
 
     const match = await bcrypt.compare(password, user.passwordHashed);
     if (!match) {
-        throw "Invalid username or password";
+      throw "Invalid username or password";
     }
 
     return {
+      _id: user._id.toString(),
       firstName: user.firstName,
       lastName: user.lastName,
       username: user.username,
@@ -128,26 +126,32 @@ async authenticateUser(username, password) {
     };
   },
 
-async updateUserPatch(id, userInfo) {
+  async updateUserPatch(id, userInfo) {
     id = exportedMethods.checkId(id);
     let updateFields = {};
     let userCollection = await users();
 
     if (userInfo.firstName) {
-        updateFields.firstName = exportedMethods.checkName(userInfo.firstName, 'First name');
+      updateFields.firstName = exportedMethods.checkName(
+        userInfo.firstName,
+        "First name",
+      );
     }
     if (userInfo.lastName) {
-        updateFields.lastName = exportedMethods.checkName(userInfo.lastName, 'Last name');
+      updateFields.lastName = exportedMethods.checkName(
+        userInfo.lastName,
+        "Last name",
+      );
     }
     if (userInfo.username) {
-        updateFields.username = exportedMethods.checkUsername(userInfo.username);
-        let  existingUser = await userCollection.findOne({
-            username: userInfo.username
-        });
+      updateFields.username = exportedMethods.checkUsername(userInfo.username);
+      let existingUser = await userCollection.findOne({
+        username: userInfo.username,
+      });
 
-        if (existingUser) {
-            throw 'Username already exists';
-        }
+      if (existingUser) {
+        throw "Username already exists";
+      }
     }
     //if (userInfo.email) {
     //    updateFields.email = exportedMethods.checkEmail(userInfo.email);
@@ -160,46 +164,43 @@ async updateUserPatch(id, userInfo) {
     //    }
     //}
     if (userInfo.role) {
-        updateFields.role = exportedMethods.checkRole(userInfo.role);
+      updateFields.role = exportedMethods.checkRole(userInfo.role);
     }
     if (userInfo.passwordHashed) {
-        updateFields.passwordHashed = exportedMethods.checkString(userInfo.passwordHashed, 'Password');
+      updateFields.passwordHashed = exportedMethods.checkString(
+        userInfo.passwordHashed,
+        "Password",
+      );
     }
     // No validation done yet for the following...
     if (userInfo.publicFollowingRestaurants) {
-        updateFields.publicFollowingRestaurants = userInfo.publicFollowingRestaurants;
-
+      updateFields.publicFollowingRestaurants =
+        userInfo.publicFollowingRestaurants;
     }
     if (userInfo.privateFollowingRestaurants) {
-        updateFields.privateFollowingRestaurants = userInfo.privateFollowingRestaurants;
-
+      updateFields.privateFollowingRestaurants =
+        userInfo.privateFollowingRestaurants;
     }
     if (userInfo.reviewsCompleted) {
-        updateFields.reviewsCompleted = userInfo.reviewsCompleted;
-
+      updateFields.reviewsCompleted = userInfo.reviewsCompleted;
     }
     if (userInfo.commentsPosted) {
-        updateFields.commentsPosted = userInfo.commentsPosted;
-
+      updateFields.commentsPosted = userInfo.commentsPosted;
     }
     if (userInfo.notifications) {
-        updateFields.notifications = userInfo.notifications;
-
+      updateFields.notifications = userInfo.notifications;
     }
 
     let updateInfo = await userCollection.findOneAndUpdate(
       { _id: new ObjectId(id) },
       { $set: updateFields },
-      { returnDocument: 'after' }
+      { returnDocument: "after" },
     );
 
-    if (!updateInfo) 
-        throw `Error: Update fail, Could not find a user with id of ${id}`;
+    if (!updateInfo)
+      throw `Error: Update fail, Could not find a user with id of ${id}`;
     return updateInfo;
-}
-
-
+  },
 };
-
 
 export default userData;
