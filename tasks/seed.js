@@ -184,7 +184,6 @@ const main = async () => {
       name: "Old Mill Cafe LLC",
       boro: "brooklyn",
       address: {
-        _id: new ObjectId(),
         building: "49",
         street: "Wilson Avenue",
         zip: "11237",
@@ -200,7 +199,6 @@ const main = async () => {
       name: `John's Pizzeria`,
       boro: "manhattan",
       address: {
-        _id: new ObjectId(),
         building: "278",
         street: "Bleecker Street",
         zip: "10014",
@@ -237,7 +235,6 @@ const main = async () => {
       name: "Lin & Daughters",
       boro: "manhattan",
       address: {
-        _id: new ObjectId(),
         building: "181",
         street: "West 4 Street",
         zip: "10014",
@@ -253,7 +250,6 @@ const main = async () => {
       name: "218 Restaurant",
       boro: "manhattan",
       address: {
-        _id: new ObjectId(),
         building: "218220",
         street: "Grand Street",
         zip: "10014",
@@ -293,7 +289,6 @@ const main = async () => {
       name: "King's Wok",
       boro: "brooklyn",
       address: {
-        _id: new ObjectId(),
         building: "261",
         street: "Troy Avenue",
         zip: "11213",
@@ -309,7 +304,6 @@ const main = async () => {
       name: "The Sculpt Cafe",
       boro: "staten island",
       address: {
-        _id: new ObjectId(),
         building: "1584",
         street: "Richmond Rd",
         zip: "10304",
@@ -325,7 +319,6 @@ const main = async () => {
       name: "Tea and Milk",
       boro: "queens",
       address: {
-        _id: new ObjectId(),
         building: "32-02",
         street: "34 Avenue",
         zip: "11106",
@@ -341,7 +334,6 @@ const main = async () => {
       name: "T & G Flavors",
       boro: "queens",
       address: {
-        _id: new ObjectId(),
         building: "228-01",
         street: "Linden Boulevard",
         zip: "11411",
@@ -357,7 +349,6 @@ const main = async () => {
       name: "SNAFU",
       boro: "manhattan",
       address: {
-        _id: new ObjectId(),
         building: "127",
         street: "East 47 Street",
         zip: "10017",
@@ -373,7 +364,6 @@ const main = async () => {
       name: "Subway",
       boro: "queens",
       address: {
-        _id: new ObjectId(),
         building: "69-79",
         street: "Grand Avenue",
         zip: "11378",
@@ -447,30 +437,42 @@ const main = async () => {
     {
       _id: AlanComment1,
       userID: AlanTuringID,
+      username: "alan.turing",
+      restaurantID: OldMillCafeID,
       message: "This place is awesome! Their scones are to die for!",
       date: "04/12/2026",
       replies: [],
+      edited: false,
     },
     {
       _id: AnnaComment1,
       userID: AnnaReedID,
+      username: "reedanna567",
+      restaurantID: JohnsPizzeriaID,
       message: "I saw a rat last week in the kitchen...",
       date: "09/02/2025",
       replies: [AlanComment2, JohnComment1],
+      edited: false,
     },
     {
       _id: AlanComment2,
       userID: AlanTuringID,
+      username: "alan.turing",
+      restaurantID: JohnsPizzeriaID,
       message: `Yikes! I also saw one today!! I hope this isn't a trend...`,
       date: "09/18/2025",
       replies: [],
+      edited: true,
     },
     {
       _id: JohnComment1,
       userID: JohnMillerID,
+      username: "doglover78",
+      restaurantID: JohnsPizzeriaID,
       message: `Broooo, 2 rats ran across my table last night when I was getting food. All I wanted was a quick slice after a night out!`,
       date: "09/18/2025",
       replies: [],
+      edited: false,
     },
   ];
 

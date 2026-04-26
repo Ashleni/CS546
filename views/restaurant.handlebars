@@ -3,14 +3,63 @@
 
   <header>
     <h1>{{restaurant.name}}</h1>
-    <span>{{restaurant.cuisine}}</span>
-    <span>{{restaurant.boro}}</span>
+    {{#if userIsFollowing}}<button type="submit" name="unfollow_restaurant_button" id="unfollow_restaurant_button">Unfollow Restaurant</button>
+    {{else}}<button type="submit" name="follow_restaurant_button" id="follow_restaurant_button">Follow Restaurant</button>{{/if}}
+    <p><strong>Average Rating:</strong> {{#if avgRating}}{{avgRating}}/5{{else}}This restaurant has not been rated yet!{{/if}}</p>
+    <span>Cuisine: {{#if restaurant.cuisine}}{{restaurant.cuisine}}{{else}}N/A{{/if}}</span>
+    <span>Borough: {{#if restaurant.boro}}{{restaurant.boro}}{{else}}N/A{{/if}}</span>
   </header>
 
-    <p>
-      Address:
-      {{restaurant.address.building}} {{restaurant.address.street}}, {{restaurant.address.zip}}
-    </p>
-    <p>Phone:{{restaurant.phone}}</p>
+  <p>
+    Address: {{restaurant.address.building}} {{restaurant.address.street}}, {{restaurant.address.zip}}
+  </p>
+  <p>
+    Phone: {{#if restaurant.phone}}<a href="tel:{{restaurant.phone}}">{{restaurant.phone}}{{else}}N/A{{/if}}</a>
+  </p>
+
+  <section class="inspection-history">
+    <h3>Inspection History</h3>
+    {{#if restaurant.inspections.length}}
+    <ul>
+      {{#each restaurant.inspections}}
+        <li>
+          <p><strong>Date:</strong> {{this.inspectionDate}}</p>
+          <p><strong>Grade:</strong> {{this.grade}}</p>
+          <p><strong>Action:</strong> {{this.action}}</p>
+
+          {{#if this.violationCode}}
+            <p><strong>Violation:</strong> {{this.violationCode}} - {{this.violationDescription}}</p>
+          {{else}}
+          {{/if}}
+          
+          {{#if this.criticalFlag}}
+          <p><strong>Critical Flag:</strong> {{this.criticalFlag}}</p>
+          {{else}}{{/if}}
+
+        </li>
+      {{/each}}
+    </ul>
+    {{else}}This restaurant has no inspection history!{{/if}}
+  </section>
+
+  <section class="comment-section">
+    <h3>Comments ({{commentCount}})</h3>
+    <form action="/restaurant/{{restaurant._id}}/comment" method="POST" name="comment-form" id="comment-form">
+      <label for="message">
+        Post a Comment
+        <textarea name="message" id="message" placeholder="What's on your mind?"></textarea>
+      </label>
+      <button type="submit" name="postButton" id="postButton">Post</button> 
+    </form>
+    {{#if comments.length}}
+      {{#each comments}}
+      <section class="single-comment">
+        <span><strong>{{this.username}}</strong></span>
+        <span>{{this.date}}</span>
+        <p>{{this.message}}</p>
+      </section>
+      {{/each}}
+    {{else}}No comments to see here... Be the first to post!{{/if}}
+  </section>
 
 </main>
