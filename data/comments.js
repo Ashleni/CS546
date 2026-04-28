@@ -4,15 +4,15 @@ import { getRestaurantById } from "./restaurants.js";
 import userData from "./users.js";
 import { ObjectId } from "mongodb";
 
-export const createComment = async (userID, restaurantID, message) => {
+export const createComment = async (userId, restaurantId, message) => {
   //TODO: check message for script insertion exploit
 
-  userID = helpers.checkId(userID);
-  restaurantID = helpers.checkId(restaurantID);
+  userId = helpers.checkId(userId);
+  restaurantId = helpers.checkId(restaurantId);
 
   // throws if object doesn't exist
-  const userObject = await userData.getUserById(userID);
-  const restaurantObject = await getRestaurantById(restaurantID);
+  const userObject = await userData.getUserById(userId);
+  const restaurantObject = await getRestaurantById(restaurantId);
 
   message = helpers.checkMessage(message);
 
@@ -23,9 +23,9 @@ export const createComment = async (userID, restaurantID, message) => {
   let edited = Boolean(false);
 
   let newComment = {
-    userID,
+    userID: new ObjectId(userId),
     username: userObject.username,
-    restaurantID,
+    restaurantID: new ObjectId(restaurantId),
     message,
     date,
     replies,
@@ -43,6 +43,9 @@ export const createComment = async (userID, restaurantID, message) => {
   const newId = insertInfo.insertedId.toString();
 
   const commentResult = await getCommentById(newId);
+
+  // add comment to restaurant comments
+  const addedComment = await addCommentByRestaurant(restaurantId, newId)
 
   return commentResult;
 };
@@ -71,11 +74,11 @@ export const getCommentsByUser = async (userId) => {
   const commentCollection = await comments();
 
   const commentIdResult = await commentCollection
-    .find({ userID: userId })
+    .find({ userID: new ObjectId(userId) })
     .toArray();
 
   if (commentIdResult.length === 0) {
-    throw "Comments with that user id does not exist";
+    return [];
   }
 
   return commentIdResult;
@@ -121,11 +124,9 @@ export const addCommentByRestaurant = async (restaurantId, commentId) => {
     throw "Restaurant with that restaurant id does not exist";
   }
 
-  const newCommentList = [...restaurantIdResult.userComments, commentId];
-
   const updatedInfo = await restaurantCollection.findOneAndUpdate(
     { _id: new ObjectId(restaurantId) },
-    { $set: { userComments: newCommentList } },
+    { $push: { userComments: commentId } },
     { returnDocument: "after" },
   );
 
@@ -187,6 +188,7 @@ export const removeCommentById = async (currUserId, commentId) => {
 
   // throws if comment doesn't exist
   const commentCollection = await comments();
+  const restaurantCollection = await restaurants();
 
   const deletionInfo = await commentCollection.findOneAndDelete({
     _id: new ObjectId(commentId),
@@ -196,5 +198,9 @@ export const removeCommentById = async (currUserId, commentId) => {
   if (!deletionInfo) {
     throw `Could not delete comment with comment id of ${commentId}`;
   }
-  return { _id: deletionInfo._id, deleted: true };
+
+  const deleteCommentInRestaurant = await restaurantCollection.updateOne({
+    _id: deletionInfo.restaurantID }, { $pull: { userComments: commentId} });
+
+    return { _id: deletionInfo._id.toString(), deleted: true };
 };
