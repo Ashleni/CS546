@@ -1,0 +1,68 @@
+<main>
+    <h1>Your Profile</h1>
+
+    {{#if user}}
+
+        <h3>Username</h3>
+        <p>{{user.userName}}</p>
+
+        <h3>Name</h3>
+        <p>{{user.firstName}} {{user.lastName}}</p>
+
+        <h3>Account Type</h3>
+        <p>{{role}}</p>
+
+        <div id="tabResults" class="tabContent">
+            <h2>
+                Click to scroll to your posted contents
+            </h2>
+
+            <a href="#tab1">Following</a>
+            <a href="#tab2">Reviews</a>
+            <a href="#tab3">Comments</a>
+
+            <h3 id="tab1">Following</h3>
+            {{#if userFollows}}
+                <ul>
+                    {{#each follows}}
+                        <li>{{this}}</li>
+                    {{/each}}
+                </ul>
+            {{else}} <p>You have no followed restaurants</p>
+            {{/if}}
+
+            <h3 id="tab2">Reviews</h3>
+            {{#if userReviews}}
+                <ol>
+                    {{#each reviews}}
+                            <li>
+                                Restaurant: {{this.restaurant}} <br>
+                                Your Rating: {{this.rating}} <br>
+                                Date: {{this.date}}
+                            </li>
+                    {{/each}}
+                </ol>
+            {{else}} <p>You have no posted reviews</p>
+            {{/if}}
+
+            <h3 id="tab3">Comments</h3>
+            {{#if userComments}}
+                <ol>
+                    {{#each comments}}
+                        <li>
+                            Restaurant: {{this.restaurant}} <br>
+                            Your Comment: {{this.message}} <br>
+                            Date: {{this.date}}
+                        </li>
+                    {{/each}}
+                </ol>
+            {{else}} <p>You have no posted comments</p>
+            {{/if}}
+        </div>
+
+    {{else}}
+        <a class="profileNoUser" href="/signin">To view your profile, sign in!</a>
+        or
+        <a class="profileNoUser" href="/register">register to view it</a>
+    {{/if}}
+</main>

@@ -10,6 +10,20 @@
         {{#if cuisine}}with cuisine type {{cuisine}}{{else}}{{/if}}
     </h3>
 
+    <div class="results">
+        {{#each restaurantsData}}
+            <a href="/restaurant/{{this._id}}">
+                {{this.name}} <br>
+            </a>
+            <p class="resultsDetails">
+                {{#if this.boro}}{{this.boro}}{{else}}{{/if}} <br>
+                {{#if this.cuisine}}{{this.cuisine}}{{else}}{{/if}}
+            <p>
+            <hr>
+        {{/each}}
+    </div>
+
+
     <a class="search" href="/">
         Search another location
     </a>

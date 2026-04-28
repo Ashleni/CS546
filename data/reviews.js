@@ -2,33 +2,33 @@ import {
     reviews,
     restaurants,
   } from "../config/mongoCollections.js";
-import * as helpers from '../helpers.js';
+import helpers from '../helpers.js';
 import { getRestaurantById } from "./restaurants.js";
 import userData from "./users.js";
 import { ObjectId } from "mongodb";
 
 export const createReview = async (
-    userID,
-    restaurantID,
+    userId,
+    restaurantId,
     rating
     ) => {
 
-    userID = helpers.checkId(userID);
-    restaurantID = helpers.checkId(restaurantID);
+    userId = helpers.checkId(userId);
+    restaurantId = helpers.checkId(restaurantId);
     rating = helpers.checkRating(rating);
     
-    // round ratiing
+    // round rating
     rating = Math.round(rating * 10) / 10;
 
     // throws if object doesn't exist
-    const userObject = await userData.getUserById(userID);
-    const restaurantObject = await getRestaurantById(restaurantID);
+    const userObject = await userData.getUserById(userId);
+    const restaurantObject = await getRestaurantById(restaurantId);
 
     let date = helpers.currDate();
    
     let newReview = {
-        userID,
-        restaurantID,
+        userID: new ObjectId(userId),
+        restaurantID: new ObjectId(restaurantId),
         rating,
         date,
     };
@@ -42,6 +42,9 @@ export const createReview = async (
     }
 
     const newId = insertInfo.insertedId.toString();
+
+    // add review to restaurant reviews
+    const addedReview = await addReviewToRestaurant(restaurantId, newId)
 
     const reviewResult = await getReviewById(newId);
 
@@ -71,10 +74,10 @@ export const getReviewsByUser = async (userId) => {
     
     const reviewCollection = await reviews();
     
-    const reviewIdResult = await reviewCollection.find({userID: userId}).toArray();
+    const reviewIdResult = await reviewCollection.find({userID: new ObjectId(userId)}).toArray();
     
     if (reviewIdResult.length === 0) {
-        throw 'Reviews with that user id does not exist';
+        return [];
     }
     
     return reviewIdResult;
@@ -86,7 +89,7 @@ export const getReviewsByRestaurant = async (restaurantId) => {
 
     const reviewCollection = await reviews();
 
-    const reviewIdResult = await reviewCollection.find({restaurantID: restaurantId}).toArray();
+    const reviewIdResult = await reviewCollection.find({restaurantID: new ObjectId(restaurantId)}).toArray();
 
     if (reviewIdResult.length === 0) {
         throw 'Reviews with that restaurant id do not exist';
@@ -109,19 +112,17 @@ export const addReviewToRestaurant = async (restaurantId, reviewId) => {
     const restaurantIdResult = await restaurantCollection.findOne({_id: new ObjectId(restaurantId)});
 
     if (reviewIdResult === null) {
-        throw 'Review with that restaurant id does not exist';
+        throw 'Review with that review id does not exist';
     }
 
     if (restaurantIdResult === null) {
         throw 'Restaurant with that restaurant id does not exist';
     }
 
-    const newReviewList = [...restaurantIdResult.userReviews, reviewId];
-
     const updatedInfo = await restaurantCollection.findOneAndUpdate(
         {_id: new ObjectId(restaurantId)},
-        {$set: {userReviews: newReviewList}},
-        {returnDocument: 'after'}    
+        { $push: { userReviews: reviewId } },
+        { returnDocument: 'after' }    
     );
 
     if (!updatedInfo) {
@@ -175,14 +176,19 @@ export const removeReviewById = async (currUserId, reviewId) => {
   
     // throws if review doesn't exist
     const reviewCollection = await reviews();
+    const restaurantCollection = await restaurants();
   
     const deletionInfo = await reviewCollection.findOneAndDelete({
         _id: new ObjectId(reviewId), userID: new ObjectId(currUserId)}
     );
-  
+
     if (!deletionInfo) {
       throw `Could not delete review with review id of ${reviewId}`;
     }
-    return {_id: deletionInfo._id, deleted: true};
+
+    const deleteReviewInRestaurant = await restaurantCollection.updateOne({
+        _id: deletionInfo.restaurantID }, { $pull: { userReviews: reviewId} });    
+  
+    return {_id: deletionInfo._id.toString(), deleted: true};
 };
 
