@@ -94,7 +94,7 @@ export const getCommentsByRestaurant = async (restaurantId) => {
     .toArray();
 
   if (commentIdResult.length === 0) {
-    throw "Comments with that restaurant id do not exist";
+    return [];
   }
 
   return commentIdResult;
