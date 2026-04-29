@@ -43,8 +43,10 @@
   </section>
 
   <section class="comment-section">
+    <div id="error" class="formError">{{error}}</div>
+    
     <h3>Comments ({{commentCount}})</h3>
-    <form action="/restaurant/{{restaurant._id}}/comment" method="POST" name="comment-form" id="comment-form">
+    <form action="/restaurant/{{restaurant._id}}/comment" method="POST" name="newComment-form" id="newComment-form">
       <label for="message">
         Post a Comment
         <textarea name="message" id="message" placeholder="What's on your mind?"></textarea>
@@ -61,5 +63,7 @@
       {{/each}}
     {{else}}No comments to see here... Be the first to post!{{/if}}
   </section>
+
+  <script src="../public/js/newComment.js"></script>
 
 </main>
