@@ -4,6 +4,7 @@ const router = Router();
 import { loginGuard } from "../middleware.js";
 import helpers from "../helpers.js";
 import { getCommentsByRestaurant, createComment } from "../data/comments.js";
+import { getReviewsByRestaurant } from "../data/reviews.js";
 import userData from "../data/users.js";
 
 router.route("/restaurant/:id").get(loginGuard, async (req, res) => {
@@ -27,16 +28,22 @@ router.route("/restaurant/:id").get(loginGuard, async (req, res) => {
     console.log(data);
 
     // aggregate review information
-    let numReviews = 0;
     let sumReviews = 0;
     let avgRating = "";
-    if (data.userReviews.length > 0) {
-      for (let i = 0; i < data.userReviews.length; i++) {
-        sumReviews += data.userReviews[i].rating;
-        numReviews++;
-      }
 
-      avgRating = sumReviews / numReviews;
+    try {
+      const reviewData = await getReviewsByRestaurant(id);
+
+      if (reviewData.length > 0) {
+        let numReviews = 0;
+        for (let i = 0; i < reviewData.length; i++) {
+          sumReviews += reviewData[i].rating;
+          numReviews++;
+        }
+        avgRating = (sumReviews / numReviews).toFixed(1);
+      }
+    } catch (e) {
+      avgRating = "";
     }
 
     // fetch comments
@@ -50,7 +57,7 @@ router.route("/restaurant/:id").get(loginGuard, async (req, res) => {
 
       commentCount = commentData.length;
     } catch (e) {
-      return res.status(404).render("error", { errorClass: "error", error: e });
+      commentData = [];
     }
 
     // is user following?
