@@ -8,6 +8,72 @@ import {
 import { ObjectId } from "mongodb";
 import helpers from "../helpers.js";
 
+import fs from "fs/promises";
+import path from "path";
+import { fileURLToPath } from "url";
+import {parse}  from "csv-parse/sync";
+
+
+const clean = (value) => {
+  let text = String(value ?? "");
+  return text.trim().replace(/\s+/g, " ");
+};
+
+const loadRestaurantsFromCSV = async (csvPath) => {
+  let file = await fs.readFile(csvPath, "utf8");
+  let rows = parse(file, {
+    columns: true,
+    skip_empty_lines: true,
+    trim: true,
+  });
+
+  let restaurantMap = new Map();
+   
+  for (let row of rows) { 
+    let name =  clean( row.Restaurant );
+    let boro= clean( row.Borough ).toLowerCase(); 
+    let building = clean( row.BUILDING );
+    let street = clean( row.STREET );
+    let zip =  clean( row.ZIPCODE );     
+    let phone = clean( row.PHONE ); 
+    let cuisine = clean( row["CUISINE DESCRIPTION"] ).toLowerCase();
+ 
+    let key = [name, boro, building, street, zip, phone, cuisine].join("||");
+
+    if (!restaurantMap.has(key)) { 
+      restaurantMap.set(key, {
+        _id: new ObjectId(), 
+        name, 
+        boro, 
+        address:  {
+          _id: new ObjectId(), 
+          building,
+          street,
+          zip,   
+          },
+        phone,
+        cuisine,
+         inspections: [],  
+        userReviews: [],
+        userComments: [], 
+      });
+    }
+
+    restaurantMap.get(key).inspections.push({ 
+      _id: new ObjectId(),  
+      inspectionDate:  clean(row["INSPECTION DATE"]), 
+      action: clean(row.ACTION),
+      violationCode: clean(row["VIOLATION CODE"]), 
+      violationDescription: clean(row["VIOLATION DESCRIPTION"]),
+      criticalFlag: clean(row["CRITICAL FLAG"]),  
+      grade: clean(row.GRADE), 
+    }); 
+  }
+ 
+  return  [...restaurantMap.values()];
+}; 
+
+
 const main = async () => {
   const db = await dbConnection();
   await db.dropDatabase();
@@ -376,7 +442,9 @@ const main = async () => {
     },
   ];
 
-  await restaurantCollection.insertMany(restaurantData);
+  const csvRestaurants = await loadRestaurantsFromCSV(path.resolve("tasks/DOHMH_New_York_City_Restaurant_Inspection_Results_20260423_FILTERED_TRUNCATED.csv"),);
+
+  await restaurantCollection.insertMany([...restaurantData, ...csvRestaurants]);
 
   // review data
 
