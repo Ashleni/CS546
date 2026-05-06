@@ -79,6 +79,17 @@ router.route("/profile").get(async (req, res) => {
             }      
         }
 
+        const notifications = userInfo.notifications;
+        let unread = 0;
+        // get number of unread
+        if (notifications) {
+            for (let i = 0; i < notifications.length; i++) {
+                if (notifications[i].viewed === false) {
+                    unread++;
+                }
+            }
+        }
+
         return res.render('userProfile', {
             user: {
                 userName,
@@ -92,7 +103,8 @@ router.route("/profile").get(async (req, res) => {
             userReviews,
             reviews,
             userComments,
-            comments
+            comments,
+            unread,
         });    
     } catch (e) {
         return res.status(404).render("error", { errorClass: "error", error: e });
