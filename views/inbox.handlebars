@@ -1,0 +1,47 @@
+<main>
+    <a href="/profile">Return to profile</a>
+
+    <h1>Your Inbox</h1>
+
+    {{#if sortByUnread}}
+    <a href="/inbox">Go Back<br></a>
+        {{#if unread}}
+            {{#each unread}}
+                <a class="notifNotViewed" href="/inbox/{{this._id}}">{{this.title}}<br></a>
+                <p class="notifNotViewed">{{this.date}}</p>
+                <p class="notifNotViewed">
+                    {{#if this.snippet}}{{this.snippet}}{{else}}{{/if}}
+                <p>
+                <hr>
+            {{/each}}
+        {{else}}
+            You have no unread notifications!
+        {{/if}}
+    {{else}}
+        <a href="/inbox/unread">Sort By Unread</a>
+
+        <div class="inbox">
+            {{#if notifications}}
+                {{#each notifications}}
+                    {{#if this.viewed}}
+                    <a class="notifViewed" href="/inbox/{{this._id}}">{{this.title}}<br></a>
+                    <p class="notifViewed">{{this.date}}</p>
+                    <p class="notifViewed">
+                        {{#if this.snippet}}{{this.snippet}}{{else}}{{/if}}
+                    <p>
+                    <hr>
+                    {{else}}
+                    <a class="notifNotViewed" href="/inbox/{{this._id}}">{{this.title}}<br></a>
+                    <p class="notifNotViewed">{{this.date}}</p>
+                    <p class="notifNotViewed">
+                        {{#if this.snippet}}{{this.snippet}}{{else}}{{/if}}
+                    <p>
+                    <hr>
+                    {{/if}}
+                {{/each}}
+            {{else}}
+            You have no notifications!
+            {{/if}}
+        </div>
+    {{/if}}
+</main>

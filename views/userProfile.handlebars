@@ -1,6 +1,8 @@
 <main>
     <h1>Your Profile</h1>
 
+<a href="/inbox">Inbox Notifications {{#if unread}}({{unread}}){{else}}{{/if}}</a>
+
     {{#if user}}
 
         <h3>Username</h3>
