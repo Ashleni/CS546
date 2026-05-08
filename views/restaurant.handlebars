@@ -51,14 +51,36 @@
         Post a Comment
         <textarea name="message" id="message" placeholder="What's on your mind?"></textarea>
       </label>
-      <button type="submit" name="postButton" id="postButton">Post</button> 
+      <button type="submit" name="postMessageButton" id="postMessageButton">Post</button> 
     </form>
+    <hr>
     {{#if comments.length}}
       {{#each comments}}
       <section class="single-comment">
         <span><strong>{{this.username}}</strong></span>
         <span>{{this.date}}</span>
         <p>{{this.message}}</p>
+            <form action="/restaurant/{{../restaurant._id}}/comment/{{this._id}}/reply" method="POST" name="newReply-form-{{this._id}}" id="newReply-form-{{this._id}}">
+              <label for="reply-{{this._id}}">
+                Reply to this comment
+                <textarea name="reply" id="reply-{{this._id}}" placeholder="What's on your mind?"></textarea>
+              </label>
+              <button type="submit" name="postReplyButton-{{this._id}}" id="postReplyButton-{{this._id}}">Post</button> 
+            </form>
+            {{#if this.replies.length}}
+                <span><strong>Replies:</strong></span><br>
+              {{#each this.replies}}
+                <ol>
+                  <ul>
+                    <span><strong>{{this.username}}</strong></span>
+                    <span>{{this.date}}</span>
+                    <p>{{this.message}}</p> 
+                  </ul>
+                </ol>
+              {{/each}}
+            {{else}}
+            {{/if}}
+            <hr>
       </section>
       {{/each}}
     {{else}}No comments to see here... Be the first to post!{{/if}}

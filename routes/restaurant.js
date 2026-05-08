@@ -3,7 +3,7 @@ import * as restaurants from "../data/restaurants.js";
 const router = Router();
 import { loginGuard } from "../middleware.js";
 import helpers from "../helpers.js";
-import { getCommentsByRestaurant, createComment } from "../data/comments.js";
+import { getCommentsByRestaurant, createComment, addReplyByCommentId } from "../data/comments.js";
 import { getReviewsByRestaurant } from "../data/reviews.js";
 import userData from "../data/users.js";
 
@@ -98,6 +98,31 @@ router.route("/restaurant/:id/comment").post(async (req, res) => {
 
   try {
     const comment = await createComment(userId, restaurantId, message);
+  } catch (e) {
+    return res.status(404).render("error", { errorClass: "error", error: e });
+  }
+
+  return res.redirect(`/restaurant/${restaurantId}`);
+});
+
+router.route("/restaurant/:id/comment/:commentId/reply").post(async (req, res) => {
+  let restaurantId;
+  let userId;
+  let parentCommentId;
+  let replyMessage;
+
+  try {
+    restaurantId = helpers.checkId(req.params.id, "restaurantId");
+    userId = helpers.checkId(req.session.user._id, "userId");
+    parentCommentId = helpers.checkId(req.params.commentId);
+    replyMessage = helpers.checkMessage(req.body.reply);
+  } catch (e) {
+    return res.status(404).render("error", { errorClass: "error", error: e });
+  }
+
+  try {
+    const reply = await addReplyByCommentId(userId, restaurantId, parentCommentId, replyMessage);
+
   } catch (e) {
     return res.status(404).render("error", { errorClass: "error", error: e });
   }

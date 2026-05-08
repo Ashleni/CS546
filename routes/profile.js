@@ -7,7 +7,7 @@ import { getCommentsByUser} from "../data/comments.js";
 import { getReviewsByUser} from "../data/reviews.js";
 import userData from "../data/users.js";
 
-router.route("/profile").get(async (req, res) => {
+router.route("/profile/").get(loginGuard, async (req, res) => {
     try {
         let user = false;
         let isAdmin = false;

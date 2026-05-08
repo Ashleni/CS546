@@ -22,6 +22,8 @@ export const createComment = async (userId, restaurantId, message) => {
 
   let edited = Boolean(false);
 
+  let parentId = null;
+
   let newComment = {
     userID: new ObjectId(userId),
     username: userObject.username,
@@ -29,6 +31,7 @@ export const createComment = async (userId, restaurantId, message) => {
     message,
     date,
     replies,
+    parentId,
     edited,
   };
 
@@ -90,7 +93,9 @@ export const getCommentsByRestaurant = async (restaurantId) => {
   const commentCollection = await comments();
 
   const commentIdResult = await commentCollection
-    .find({ restaurantID: new ObjectId(restaurantId) })
+    .find({ restaurantID: new ObjectId(restaurantId),
+      parentId: null
+     })
     .toArray();
 
   if (commentIdResult.length === 0) {
@@ -203,4 +208,33 @@ export const removeCommentById = async (currUserId, commentId) => {
     _id: deletionInfo.restaurantID }, { $pull: { userComments: commentId} });
 
     return { _id: deletionInfo._id.toString(), deleted: true };
+};
+
+export const addReplyByCommentId = async (userId, restaurantId, parentCommentId, replyMessage) => {
+  userId = helpers.checkId(userId);
+  restaurantId = helpers.checkId(restaurantId);
+  parentCommentId = helpers.checkId(parentCommentId);
+  replyMessage = helpers.checkMessage(replyMessage);
+
+  let reply = await createComment(userId, restaurantId, replyMessage);
+
+  const commentCollection = await comments();
+
+  await commentCollection.updateOne(
+    { _id: new ObjectId(reply._id) },
+    { $set: {parentId: new ObjectId(parentCommentId)} },
+  );
+
+  const parentComment = await commentCollection.findOneAndUpdate(
+    { _id: new ObjectId(parentCommentId) },
+    { $push: { replies: reply } },
+    { returnDocument: "after" },
+  );
+
+  if (parentComment === null) {
+    throw "reply could not be created";
+  }
+
+  // returns reply comment result
+  return reply;
 };
