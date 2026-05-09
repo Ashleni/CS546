@@ -25,7 +25,6 @@ router.route("/restaurant/:id").get(loginGuard, async (req, res) => {
 
     let isAdmin = false;
     if (req.session.user.role.toLowerCase() === "admin") isAdmin = true;
-    console.log(data);
 
     // aggregate review information
     let sumReviews = 0;
@@ -83,7 +82,7 @@ router.route("/restaurant/:id").get(loginGuard, async (req, res) => {
   }
 });
 
-router.route("/restaurant/:id/comment").post(async (req, res) => {
+router.route("/restaurant/:id/comment").post(loginGuard,  async (req, res) => {
   let restaurantId;
   let userId;
   let message;
@@ -105,7 +104,7 @@ router.route("/restaurant/:id/comment").post(async (req, res) => {
   return res.redirect(`/restaurant/${restaurantId}`);
 });
 
-router.route("/restaurant/:id/comment/:commentId/reply").post(async (req, res) => {
+router.route("/restaurant/:id/comment/:commentId/reply").post(loginGuard, async (req, res) => {
   let restaurantId;
   let userId;
   let parentCommentId;
@@ -114,7 +113,7 @@ router.route("/restaurant/:id/comment/:commentId/reply").post(async (req, res) =
   try {
     restaurantId = helpers.checkId(req.params.id, "restaurantId");
     userId = helpers.checkId(req.session.user._id, "userId");
-    parentCommentId = helpers.checkId(req.params.commentId);
+    parentCommentId = helpers.checkId(req.params.commentId, "parentCommentId");
     replyMessage = helpers.checkMessage(req.body.reply);
   } catch (e) {
     return res.status(404).render("error", { errorClass: "error", error: e });
