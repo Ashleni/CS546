@@ -68,16 +68,18 @@
               <button type="submit" name="postReplyButton-{{this._id}}" id="postReplyButton-{{this._id}}">Post</button> 
             </form>
             {{#if this.replies.length}}
-                <span><strong>Replies:</strong></span><br>
-              {{#each this.replies}}
-                <ol>
+                <div class="replies">
+                  <span><strong>Replies:</strong></span>
                   <ul>
-                    <span><strong>{{this.username}}</strong></span>
-                    <span>{{this.date}}</span>
-                    <p>{{this.message}}</p> 
+                  {{#each this.replies}}
+                    <li>
+                      <span><strong>{{this.username}}</strong></span>
+                      <span>{{this.date}}</span>
+                      <p>{{this.message}}</p>
+                    </li>
+                  {{/each}}
                   </ul>
-                </ol>
-              {{/each}}
+                </div>
             {{else}}
             {{/if}}
             <hr>
