@@ -626,3 +626,85 @@ export const search = async (name = "", boro = "", cuisine = "") => {
 
   return restaurants;
 };
+
+/**
+ * Searches the database for restaurant's with 3 or more A grade ratings matching the given arguments. Minor spelling mistakes are allowed. If only
+ * blank arguments are given, the top 25 restaurants in the database are returned.
+ * @param {string} name - The name of the restaurant(s) to search for (optional).
+ * @param {string} boro - The boro location of the restaurant(s) to search for (optional).
+ * @param {string} cuisine - The cuisine type of the restaurant(s) to search for (optional).
+ * @returns {Promise<array>} An array with the restaurant's found using the specified arguments. The array contains the
+ * restaurant ID, name, boro, cuisine type, and consecutive A grades.
+ */
+export const getCleanestRestaurants = async (
+  name = "",
+  boro = "",
+  cuisine = "",
+) => {
+  if (typeof name !== "string") throw "Errow: name must be type string!";
+  if (typeof boro !== "string") throw "Errow: boro must be type string!";
+  if (typeof cuisine !== "string") throw "Errow: cuisine must be type string!";
+
+  name = name.trim();
+  boro = boro.trim();
+  cuisine = cuisine.trim().toLowerCase();
+
+  let cleanestRestaurants = [];
+
+  // const restaurants = await getAllRestaurants();
+  const restaurantCollection = await restaurants();
+  const allRestaurants = await restaurantCollection
+    .find({})
+    .project({ _id: 1, name: 1, boro: 1, cuisine: 1, inspections: 1 })
+    .toArray();
+  for (let i = 0; i < allRestaurants.length; i++) {
+    const inspections = allRestaurants[i].inspections;
+    if (!inspections || inspections.length === 0) continue;
+
+    // get number of consecutive A
+    let consecutive = 0;
+    for (let j = inspections.length - 1; j >= 0; j--) {
+      if (inspections[j].grade === "A") {
+        consecutive++;
+      } else {
+        break;
+      }
+    }
+
+    if (consecutive >= 3) {
+      cleanestRestaurants.push({ restaurant: allRestaurants[i], consecutive });
+    }
+  }
+
+  // filter based on search
+  if (boro !== "") {
+    boro = helpers.checkBoro(boro);
+    cleanestRestaurants = cleanestRestaurants.filter(
+      (r) => r.restaurant.boro === boro,
+    );
+  }
+
+  if (name !== "") {
+    const fuse = new Fuse(cleanestRestaurants, {
+      keys: ["restaurant.name"],
+      threshold: 0.4,
+    });
+
+    const searchResults = fuse.search(name);
+    cleanestRestaurants = searchResults.map((restaurant) => restaurant.item);
+  }
+
+  if (cuisine !== "") {
+    const fuse = new Fuse(cleanestRestaurants, {
+      keys: ["restaurant.cuisine"],
+      threshold: 0.4,
+    });
+
+    const searchResults = fuse.search(cuisine);
+    cleanestRestaurants = searchResults.map((restaurant) => restaurant.item);
+  }
+
+  return cleanestRestaurants
+    .sort((a, b) => b.consecutive - a.consecutive)
+    .slice(0, 25);
+};

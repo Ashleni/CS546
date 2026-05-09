@@ -25,6 +25,7 @@ router.route("/inbox").get(loginGuard, async (req, res) => {
     }
 
     return res.render("inbox", {
+      title: "Your Inbox",
       sortByUnread: false,
       notifications,
     });
@@ -54,6 +55,7 @@ router.route("/inbox/unread").get(loginGuard, async (req, res) => {
     }
 
     return res.render("inbox", {
+      title: "Your Inbox",
       sortByUnread: true,
       unread,
     });
@@ -95,6 +97,7 @@ router.route("/inbox/:id").get(loginGuard, async (req, res) => {
     });
 
     return res.render("notification", {
+      title: notification.title,
       notification,
     });
   } catch (e) {
