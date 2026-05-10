@@ -1,11 +1,11 @@
 import { Router } from "express";
 import * as restaurants from "../data/restaurants.js";
 const router = Router();
-import { loginGuard } from "../middleware.js";
+import { loginGuard, adminGuard } from "../middleware.js";
 import helpers from "../helpers.js";
-import { getCommentsByRestaurant, createComment, addReplyByCommentId } from "../data/comments.js";
+import { getCommentsByRestaurant, createComment, addReplyByCommentId, adminDeleteCommentById } from "../data/comments.js";
 import {getReviewsByRestaurant, createReview, patchReviewById,
-  getReviewById, SURVEY_QUESTIONS, validateSurvey,} from "../data/reviews.js";
+  getReviewById, SURVEY_QUESTIONS, validateSurvey,adminDeleteReviewById} from "../data/reviews.js";
 import userData from "../data/users.js";
 import multer from "multer";
 import {followRestaurant, unfollowRestaurant, updateFollowVisibility} from "../data/users.js";
@@ -195,6 +195,13 @@ router.route("/restaurant/:id").get(loginGuard, async (req, res) => {
       followVisibility = "private";
     }
 
+    const BOROS = ["Manhattan", "Brooklyn", "Queens", "Bronx", "Staten Island"];
+    const adminBoroOptions = BOROS.map((b) => ({
+      value: b,
+      label: b,
+      selected: b === data.boro,
+    }));
+
     return res.render("restaurant", {
       title: data.name,
       restaurant: data,
@@ -205,6 +212,7 @@ router.route("/restaurant/:id").get(loginGuard, async (req, res) => {
       publicReviews,
       comments: commentData,
       commentCount: commentCount,
+      adminBoroOptions,
     });
   } catch (e) {
     return res.status(404).render("error", { errorClass: "error", error: e });
@@ -514,5 +522,150 @@ router.route("/restaurant/:id/follow/visibility").post(loginGuard, async (req, r
 
   return res.redirect(`/restaurant/${restaurantId}`);   
 });
+
+
+// ADMIN ROUTES
+router.route("/restaurant/:id/admin/edit").post(adminGuard, async (req, res) => {
+  let id; 
+  try { 
+    id = helpers.checkId(req.params.id, "Restaurant ID"); 
+  } catch (e) { 
+    return res.status(400).render("error", { errorClass: "error", error: e }); 
+  }
+
+  const updateObject = {};
+  if (req.body.name){
+    updateObject.name= req.body.name;
+  }
+  if (req.body.cuisine) {
+    updateObject.cuisine = req.body.cuisine;
+  }
+  if (req.body.boro){
+    updateObject.boro= req.body.boro;
+  }
+  if (req.body.phone){
+    updateObject.phone= req.body.phone;
+  }
+
+  const addressFields = {};
+  if (req.body.building){ 
+    addressFields.building = req.body.building;
+  }
+  if (req.body.street){
+    addressFields.street= req.body.street;
+  }
+  if (req.body.zip){
+    addressFields.zip= req.body.zip;
+  }
+  if (Object.keys(addressFields).length > 0){ 
+    updateObject.address = addressFields;
+  }
+
+  if (Object.keys(updateObject).length === 0) {
+    return res.redirect(`/restaurant/${id}`);
+  }
+
+  try {
+    await restaurants.patchRestaurant(id, updateObject);
+  } catch (e) {
+    return res.status(400).render("error", { errorClass: "error", error: String(e) });
+  }
+
+  return res.redirect(`/restaurant/${id}`);
+});
+
+
+router.route("/restaurant/:id/admin/inspection").post(adminGuard, async (req, res) => {
+  let id;
+  try {
+    id = helpers.checkId(req.params.id, "Restaurant ID");
+  } catch (e) {
+    return res.status(400).render("error", { errorClass: "error", error: e });
+  }
+
+  const { inspectionDate: rawDate, action, violationCode, violationDescription, criticalFlag, grade } = req.body;
+
+  let inspectionDate;
+  if (rawDate && /^\d{4}-\d{2}-\d{2}$/.test(rawDate)) {
+    const [y, m, d] = rawDate.split("-");
+    inspectionDate = `${m}/${d}/${y}`;
+  } else {
+    inspectionDate = rawDate;
+  }
+
+  try {
+    await restaurants.addInspection(id, inspectionDate, action, violationCode, violationDescription, criticalFlag, grade);
+  } catch (e) {
+    return res.status(400).render("error", { errorClass: "error", error: String(e) });
+  }
+
+  return res.redirect(`/restaurant/${id}`);
+});
+
+router.route("/restaurant/:id/admin/inspection/:inspectionId/delete").post(adminGuard, async (req, res) => {
+  let id, inspectionId;
+  try {
+    id = helpers.checkId(req.params.id, "Restaurant ID");
+    inspectionId = helpers.checkId(req.params.inspectionId, "Inspection ID");
+  } catch (e) {
+    return res.status(400).render("error", { errorClass: "error", error: e });
+  }
+
+  try {
+    await restaurants.removeInspection(id, inspectionId);
+  } catch (e) {
+    return res.status(400).render("error", { errorClass: "error", error: String(e) });
+  }
+
+  return res.redirect(`/restaurant/${id}`);
+});
+
+
+router.route("/review/:reviewId/admin/delete").post(adminGuard, async (req, res) => {
+  let reviewId;
+  try {
+    reviewId = helpers.checkId(req.params.reviewId, "reviewId");
+  } catch (e) {
+    return res.status(400).render("error", { errorClass: "error", error: e });
+  }
+
+  let restaurantId;
+  try {
+    const review = await getReviewById(reviewId);
+    restaurantId = review.restaurantID.toString();
+  } catch (e) {
+    return res.status(404).render("error", { errorClass: "error", error: String(e) });
+  }
+
+  try {
+    await adminDeleteReviewById(reviewId);
+  } catch (e) {
+    return res.status(400).render("error", { errorClass: "error", error: String(e) });
+  }
+
+  return res.redirect(`/restaurant/${restaurantId}`);
+});
+
+
+
+router.route("/restaurant/:id/comment/:commentId/admin/delete").post(adminGuard, async (req, res) => {
+  let restaurantId, commentId;
+  try {
+    restaurantId = helpers.checkId(req.params.id, "restaurantId");
+    commentId    = helpers.checkId(req.params.commentId, "commentId");
+  } catch (e) {
+    return res.status(400).render("error", { errorClass: "error", error: e });
+  }
+
+  try {
+    await adminDeleteCommentById(commentId);
+  } catch (e) {
+    return res.status(400).render("error", { errorClass: "error", error: String(e) });
+  }
+
+  return res.redirect(`/restaurant/${restaurantId}`);
+});
+
+
 
 export default router;

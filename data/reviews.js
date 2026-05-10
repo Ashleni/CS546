@@ -389,3 +389,28 @@ export const removeReviewById = async (currUserId, reviewId) => {
     return {_id: deletionInfo._id.toString(), deleted: true};
 };
 
+export const adminDeleteReviewById = async (reviewId) => {
+  reviewId = helpers.checkId(reviewId, "reviewId");
+
+  const reviewCollection = await reviews();
+  const restaurantCollection = await restaurants();
+
+  const deletionInfo = await reviewCollection.findOneAndDelete({
+    _id: new ObjectId(reviewId),
+  });
+
+  if (!deletionInfo) {
+    throw `Could not delete review with review id of ${reviewId}`;
+  }
+
+  await restaurantCollection.updateOne(
+    { _id: deletionInfo.restaurantID },
+    { $pull: { userReviews: reviewId } }
+  );
+
+  return {
+    _id: deletionInfo._id.toString(),
+    deleted: true,
+    restaurantID: deletionInfo.restaurantID.toString(),
+  };
+};

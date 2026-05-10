@@ -1,6 +1,152 @@
 <main>
   <a href="/home">Back to Search</a>
 
+{{#if isAdmin}}
+
+  <section>
+    <h2>Admin Panel</h2>
+
+    <details>
+      <summary>Edit Restaurant Info</summary>
+
+      <form action="/restaurant/{{restaurant._id}}/admin/edit" method="POST">
+
+        <label>
+          Name
+          <input type="text" name="name" value="{{restaurant.name}}" maxlength="35">
+        </label>
+
+        <label>
+          Cuisine
+          <input type="text" name="cuisine" value="{{restaurant.cuisine}}" maxlength="15">
+        </label>
+
+        <label>
+          Borough
+            <select name="boro">
+              {{#each adminBoroOptions}}
+                <option value="{{this.value}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+              {{/each}}
+            </select>
+        </label>
+
+        <label>
+          Phone
+          <input type="text" name="phone" value="{{restaurant.phone}}" maxlength="10">
+        </label>
+
+        <label>
+          Building
+          <input type="text" name="building" value="{{restaurant.address.building}}" maxlength="10">
+        </label>
+
+        <label>
+          Street
+          <input type="text" name="street" value="{{restaurant.address.street}}" maxlength="45">
+        </label>
+
+        <label>
+          Zip Code
+          <input type="text" name="zip" value="{{restaurant.address.zip}}" maxlength="5">
+        </label>
+
+        <button type="submit">Save Changes</button>
+      </form>
+    </details>
+
+    <details>
+      <summary>Manage Inspection History</summary>
+
+      <h4>Current Inspections</h4>
+
+      {{#if restaurant.inspections.length}}
+
+        <ul>
+          {{#each restaurant.inspections}}
+            <li>
+              <strong>{{this.inspectionDate}}</strong>
+              — Grade: {{this.grade}}
+              — {{this.action}}
+
+              {{#if this.violationCode}}
+                | Violation: {{this.violationCode}}
+              {{/if}}
+
+              <form action="/restaurant/{{../restaurant._id}}/admin/inspection/{{this._id}}/delete" method="POST">
+                <button type="submit">
+                  Remove
+                </button>
+              </form>
+            </li>
+          {{/each}}
+        </ul>
+
+      {{else}}
+
+        <p>No inspection records on file.</p>
+
+      {{/if}}
+
+      <h4>Add New Inspection</h4>
+
+      <form action="/restaurant/{{restaurant._id}}/admin/inspection" method="POST">
+
+        <label>
+          Inspection Date
+          <input type="date" name="inspectionDate" required>
+        </label>
+
+        <label>
+          Grade
+          <select name="grade" required>
+            <option value="">Select</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+          </select>
+        </label>
+
+        <label>
+          Action
+          <select name="action" required>
+            <option value="">Select</option>
+            <option value="No violations were recorded at the time of this inspection.">
+              No violations recorded
+            </option>
+            <option value="Violations were cited in the following area(s).">
+              Violations cited
+            </option>
+          </select>
+        </label>
+
+        <label>
+          Critical Flag
+          <select name="criticalFlag" required>
+            <option value="">Select</option>
+            <option value="Not Critical">Not Critical</option>
+            <option value="Critical">Critical</option>
+          </select>
+        </label>
+
+        <label>
+          Violation Code
+          <input type="text" name="violationCode" maxlength="10">
+        </label>
+
+        <label>
+          Violation Description
+          <input type="text" name="violationDescription" maxlength="100">
+        </label>
+
+        <button type="submit">Add Inspection</button>
+      </form>
+
+    </details>
+
+  </section>
+
+{{/if}}
+
   <header>
     <h1>{{restaurant.name}}</h1>
 
@@ -127,6 +273,11 @@
               </tbody>
             </table>
           </details> 
+          {{#if @root.isAdmin}}
+            <form action="/review/{{this._id}}/admin/delete" method="POST" style="margin-top:0.5rem">
+              <button type="submit">Delete Review</button>
+            </form>
+          {{/if}}
         </article>
       {{/each}}
     {{else}}
@@ -162,6 +313,13 @@
               </label>
               <button type="submit" name="postReplyButton-{{this._id}}" id="postReplyButton-{{this._id}}">Post</button> 
             </form>
+
+            {{#if @root.isAdmin}}
+              <form action="/restaurant/{{../restaurant._id}}/comment/{{this._id}}/admin/delete" method="POST" style="margin-top:0.4rem">
+                <button type="submit"> Delete Comment</button>
+              </form>
+            {{/if}}
+
             {{#if this.replies.length}}
                 <div class="replies">
                   <span><strong>Replies:</strong></span>
