@@ -12,22 +12,35 @@
       "bronx":        [40.8448, -73.8648],
       "staten island":[40.5795, -74.1502],
     };
+
     const map = L.map("map").setView([40.7128, -74.0060], 11);
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
       maxZoom: 18,
     }).addTo(map);
+
     const restaurants = {{{restaurantsJSON}}};
+
     restaurants.forEach(r => {
-      const boroughName = r.boro || r.borough || "";
-      const base = boroughCoords[boroughName];
-      if (!base) return;
-      const lat = base[0] + (Math.random() - 0.5) * 0.05;
-      const lng = base[1] + (Math.random() - 0.5) * 0.05;
+      let lat, lng;
+
+      if (r.latitude && r.longitude) {
+        // Use real coordinates if available (after geocoding script runs)
+        lat = r.latitude;
+        lng = r.longitude;
+      } else {
+        // Fall back to borough center with random offset
+        const boroughName = r.boro || r.borough || "";
+        const base = boroughCoords[boroughName];
+        if (!base) return;
+        lat = base[0] + (Math.random() - 0.5) * 0.08;
+        lng = base[1] + (Math.random() - 0.5) * 0.08;
+      }
+
       const marker = L.marker([lat, lng]).addTo(map);
       marker.bindPopup(
         `<strong>${r.name}</strong><br>` +
-        `${boroughName}<br>` +
+        `${r.boro || ""}<br>` +
         `Cuisine: ${r.cuisine || "N/A"}<br>` +
         `<a href="/restaurant/${r._id}">View Profile →</a>`
       );

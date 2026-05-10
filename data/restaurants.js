@@ -129,7 +129,7 @@ export const getAllRestaurants = async () => {
   const restaurantCollection = await restaurants();
   const restaurantList = await restaurantCollection
     .find({})
-    .project({ _id: 1, name: 1, boro: 1, cuisine: 1 })
+    .project({ _id: 1, name: 1, boro: 1, cuisine: 1, latitude: 1, longitude: 1 })
     .toArray();
 
   if (!restaurantList) throw "Error: Could not get all restaurants!";
