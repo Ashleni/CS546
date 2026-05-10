@@ -12,6 +12,7 @@ router.route("/profile/").get(loginGuard, async (req, res) => {
         let user = false;
         let isAdmin = false;
 
+        if (!req.session.user) throw 'No user in session';
         if (req.session.user) user = true;
         if (req.session.user.role.toLowerCase() === "admin") isAdmin = true;
 

@@ -1,5 +1,10 @@
 export const handlebarsLocalVars = (req, res, next) => {
     res.locals.user = req.session.user || null; // https://forum.freecodecamp.org/t/res-locals-user-how-does-it-work/76212
+    if (res.locals.user && req.session.user.role) {
+        if (req.session.user.role.toLowerCase() === 'admin') {
+            res.locals.adminUser = true;
+        }
+    }
     next(); // we can add more variables to use in handlebars templates as needed.
 };
 

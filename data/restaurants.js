@@ -8,6 +8,7 @@ import { removeRestaurantFromAllFollowers } from "./users.js";
 /**
  * Create a restaurant profile with the specified information.
  * @param {string} name - The name of the restaurant.
+ * @param {string} ownerId - The id of the user restaurant owner.
  * @param {string} boro - The boro the restaurant is located in.
  * @param {string} building - The building number of the restaurant.
  * @param {string} street - The street the restaurant is located on.
@@ -18,6 +19,7 @@ import { removeRestaurantFromAllFollowers } from "./users.js";
  */
 export const createRestaurant = async (
   name,
+  ownerId,
   boro,
   building,
   street,
@@ -37,6 +39,9 @@ export const createRestaurant = async (
     throw "Error: name is missing!";
   }
 
+  // ownerId
+  ownerId = helpers.checkId(ownerId);
+
   // boro
   if (boro) {
     boro = helpers.checkBoro(boro);
@@ -46,12 +51,7 @@ export const createRestaurant = async (
 
   // building
   if (building) {
-    if (typeof building !== "string")
-      throw "Error: building must be type string!";
-
-    building = building.trim();
-    if (building.length < 1 || building.length > 10)
-      throw "Error: building has invalid length!";
+    building = helpers.checkBuilding(building);
   } else {
     throw "Error: building is missing!";
   }
@@ -83,12 +83,7 @@ export const createRestaurant = async (
 
   // cuisine
   if (cuisine) {
-    if (typeof cuisine !== "string")
-      throw "Error: cuisine must be type string!";
-
-    cuisine = cuisine.trim().toLowerCase();
-    if (cuisine.length < 3 || cuisine.length > 15)
-      throw "Error: cuisine has invalid length!";
+    cuisine = helpers.checkCuisine(cuisine);
   } else {
     throw "Error: cuisine is missing!";
   }
@@ -96,6 +91,7 @@ export const createRestaurant = async (
   const restaurantInfo = {
     _id: new ObjectId(),
     name: name,
+    ownerId: new ObjectId(ownerId),
     boro: boro,
     address: {
       building: building,
@@ -126,7 +122,7 @@ export const getAllRestaurants = async () => {
   const restaurantCollection = await restaurants();
   const restaurantList = await restaurantCollection
     .find({})
-    .project({ _id: 1, name: 1, boro: 1, cuisine: 1 })
+    .project({ _id: 1, name: 1, ownerId: 1, address: 1, boro: 1, phone: 1, cuisine: 1 })
     .toArray();
 
   if (!restaurantList) throw "Error: Could not get all restaurants!";
