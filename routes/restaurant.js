@@ -3,7 +3,7 @@ import * as restaurants from "../data/restaurants.js";
 const router = Router();
 import { loginGuard, adminGuard } from "../middleware.js";
 import helpers from "../helpers.js";
-import { getCommentsByRestaurant, createComment, addReplyByCommentId, adminDeleteCommentById } from "../data/comments.js";
+import { getCommentsByRestaurant, createComment, patchCommentById, addReplyByCommentId, deleteCommentById, getCommentById, removeCommentById } from "../data/comments.js";
 import {getReviewsByRestaurant, createReview, patchReviewById,
   getReviewById, SURVEY_QUESTIONS, validateSurvey,adminDeleteReviewById} from "../data/reviews.js";
 import userData from "../data/users.js";
@@ -435,6 +435,50 @@ router.route("/restaurant/:id/comment").post(loginGuard,  async (req, res) => {
   return res.redirect(`/restaurant/${restaurantId}`);
 });
 
+router.route("/restaurant/:id/comment/:commentId/edit").get(loginGuard, async (req, res) => {
+  try { 
+    const restaurantId = helpers.checkId(req.params.id, "restaurantId");
+    const commentId = helpers.checkId(req.params.commentId, "commentId");
+    const userId = helpers.checkId(req.session.user._id, "userId");
+    const comment = await getCommentById(commentId);
+
+    if (comment.userID.toString() !== userId) {
+      throw 'User did not create this comment'  
+    }
+
+    const restaurant = await restaurants.getRestaurantById(restaurantId);
+
+    return res.render('editCommentForm', {
+      title: `Edit Your Comment - ${restaurant.name}`,
+      restaurant,
+      comment
+    });
+  } catch (e) {
+    return res.status(400).render("error", { errorClass: "error", error: e });
+  }
+});
+
+// PUT request to update an existing review
+router.route("/restaurant/:id/comment/:commentId/edit").post(loginGuard, async (req, res) => {
+  try { 
+    const restaurantId = helpers.checkId(req.params.id, "restaurantId");
+    const commentId = helpers.checkId(req.params.commentId, "commentId");
+    const userId = helpers.checkId(req.session.user._id, "userId");
+    const comment = await getCommentById(commentId);
+
+    if (comment.userID.toString() !== userId) {
+      throw 'User did not create this comment'  
+    }
+
+    const newComment = helpers.checkMessage(req.body.message);
+    await patchCommentById(userId, commentId, newComment);
+
+    return res.redirect(`/restaurant/${restaurantId}`);
+  } catch (e) {
+    return res.status(400).render("error", { errorClass: "error", error: e });
+  }
+  });
+
 router.route("/restaurant/:id/comment/:commentId/reply").post(loginGuard, async (req, res) => {
   let restaurantId;
   let userId;
@@ -646,26 +690,50 @@ router.route("/review/:reviewId/admin/delete").post(adminGuard, async (req, res)
   return res.redirect(`/restaurant/${restaurantId}`);
 });
 
+router.route("/restaurant/:id/comment/:commentId/delete").post(loginGuard, async (req, res) => {
+  let restaurantId, commentId, userId;
+  const isAdmin = req.session.user.role.toLowerCase() === "admin";
 
-
-router.route("/restaurant/:id/comment/:commentId/admin/delete").post(adminGuard, async (req, res) => {
-  let restaurantId, commentId;
   try {
     restaurantId = helpers.checkId(req.params.id, "restaurantId");
+    userId = helpers.checkId(req.session.user._id, "userId");
     commentId    = helpers.checkId(req.params.commentId, "commentId");
   } catch (e) {
     return res.status(400).render("error", { errorClass: "error", error: e });
   }
 
+  let comment;
   try {
-    await adminDeleteCommentById(commentId);
+    comment = await getCommentById(commentId);
+  } catch (e) {
+    return res.status(404).render("error", { errorClass: "error", error: e });
+  }
+
+  try {
+    let isCommentOwner = false;
+
+    if (comment.userID.toString() == userId) {
+      isCommentOwner = true;
+    }
+
+    if (!isAdmin && !isCommentOwner) throw 'User is not admin or comment owner';
+
+  } catch (e) {
+    return res.status(403).render("error", { errorClass: "error", error: String(e) });
+  }
+
+  try {
+    if (isAdmin) {
+      await deleteCommentById(commentId);
+    }
+    else {
+      await removeCommentById(userId, commentId)
+    }
   } catch (e) {
     return res.status(400).render("error", { errorClass: "error", error: String(e) });
   }
 
   return res.redirect(`/restaurant/${restaurantId}`);
 });
-
-
 
 export default router;

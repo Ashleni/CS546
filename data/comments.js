@@ -179,6 +179,26 @@ export const patchCommentById = async (currUserId, commentId, newMessage) => {
     throw "Comment could not be edited";
   }
 
+  // update parent if exists
+
+  if (updatedInfo.parentId) {
+    const updatedParentInfo = await commentCollection.findOneAndUpdate({
+      _id: new ObjectId(updatedInfo.parentId),
+      'replies._id': commentId},
+      {
+        $set: {
+        'replies.$.message': newMessage,
+        'replies.$.date': helpers.currDate(),
+        'replies.$.edited': Boolean(true)
+        }
+      },
+      { returnDocument: "after" },
+    );
+
+    if (!updatedParentInfo) throw 'Reply could not be updated';
+  }
+
+
   updatedInfo._id = updatedInfo._id.toString();
 
   return updatedInfo;
@@ -225,9 +245,11 @@ export const addReplyByCommentId = async (userId, restaurantId, parentCommentId,
     { $set: {parentId: new ObjectId(parentCommentId)} },
   );
 
+  let currReply = await getCommentById(reply._id)
+
   const parentComment = await commentCollection.findOneAndUpdate(
     { _id: new ObjectId(parentCommentId) },
-    { $push: { replies: reply } },
+    { $push: { replies: currReply } },
     { returnDocument: "after" },
   );
 
@@ -239,7 +261,7 @@ export const addReplyByCommentId = async (userId, restaurantId, parentCommentId,
   return reply;
 };
 
-export const adminDeleteCommentById = async (commentId) => {
+export const deleteCommentById = async (commentId) => {
   commentId = helpers.checkId(commentId);
 
   let commentCollection = await comments(); 
