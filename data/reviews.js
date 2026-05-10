@@ -7,18 +7,181 @@ import { getRestaurantById } from "./restaurants.js";
 import userData from "./users.js";
 import { ObjectId } from "mongodb";
 
+// we may want to change these or add more questions. 
+export const SURVEY_QUESTIONS = [
+  {
+    key: "diningAreaCleanliness", 
+    label: "How would you rate the cleanliness of the dining area?", 
+    type: "scale",
+    isScale: true, 
+    isChoice: false,  
+    options: [ 
+      { value: "1", label: "1" },
+      { value: "2", label: "2" },
+      { value: "3", label: "3" }, 
+      { value: "4", label: "4" },
+      { value: "5", label: "5" }, 
+    ],
+  },
+
+  { 
+    key:  "restroomCleanliness",
+    label:  "How would you rate the cleanliness of the restrooms?",
+    type: "scale",
+    isScale: true, 
+    isChoice: false,  
+    options: [ 
+      { value: "1", label: "1" },
+      { value: "2", label: "2" },
+      { value: "3", label: "3" }, 
+      { value: "4", label: "4" },
+      { value: "5", label: "5" }, 
+    ],
+  },
+
+  {
+    key:  "staffHygiene",
+    label: "How would you rate the overall hygiene of the staff?",
+    type: "scale",
+    isScale: true, 
+    isChoice: false,  
+    options: [ 
+      { value: "1", label: "1" },
+      { value: "2", label: "2" },
+      { value: "3", label: "3" }, 
+      { value: "4", label: "4" },
+      { value: "5", label: "5" }, 
+    ],
+  },
+
+  {
+    key:  "overallExperience", 
+    label:  "How would you rate your overall dining experience?", 
+    type: "scale", 
+    isScale: true, 
+    isChoice: false,  
+    options: [ 
+      { value: "1", label: "1" },
+      { value: "2", label: "2" },
+      { value: "3", label: "3" }, 
+      { value: "4", label: "4" },
+      { value: "5", label: "5" }, 
+    ],
+  }, 
+
+  {
+    key: "foodHandlingPractices", 
+    label: "Were proper food-handling practices observed (gloves, hair nets, etc.)?", 
+    type: "choice", 
+    isScale: false,
+    isChoice: true,
+    options: [
+      { value: "yes",label: "Yes"}, 
+      { value: "no",label: "No"}, 
+      { value: "not_observed", label: "Didn't notice" },
+    ],
+  },
+
+  {
+    key: "foodTemperature",
+    label: "Was food served at the appropriate temperature?",
+    type: "choice", 
+    isScale: false,
+    isChoice: true,
+    options: [
+      { value: "yes",label: "Yes"},  
+      { value: "no",label: "No"}, 
+      { value: "unsure", label: "Unsure" }, 
+    ],
+  },
+
+  {
+    key: "pestSighting", 
+    label: "Did you notice any signs of pests or infestation?", 
+    type: "choice", 
+    isScale: false,
+    isChoice: true,
+    options: [
+      { value: "yes", label: "Yes"},
+      { value: "no",  label: "No"},
+    ],
+  },
+];
+
+
+
+export const validateSurvey = (body) => {
+  let survey = {};
+  for (let question of SURVEY_QUESTIONS) {
+    let answer = body[question.key];
+
+    if (
+      answer === undefined || answer === null ||String(answer).trim() === "" ) {
+      throw `Survey question "${question.label}" is required.`; 
+    } 
+
+    // Handle scale questions
+    if (question.type === "scale") { 
+      let numberAnswer = Number(answer); 
+
+      let isWholeNumber = Number.isInteger(numberAnswer); 
+      let isInRange = numberAnswer >= 1 && numberAnswer <= 5;
+ 
+      if (!isWholeNumber || !isInRange) {
+        throw `Survey answer for "${question.label}" must be a whole number between 1 and 5.`; 
+      } 
+ 
+      survey[question.key] = numberAnswer; 
+    }  
+ 
+    // Handle multiple choice questions
+    else {
+      let isValidOption = false; 
+  
+      for (let option of question.options) {
+        if (String(answer) === option.value) {
+          isValidOption = true; 
+          break;
+        } 
+      }
+
+      if (!isValidOption) {
+        throw `Invalid answer for "${question.label}".`;
+      }
+
+      survey[question.key] = String(answer);
+    }
+  }
+
+  return survey;
+};
+ 
 export const createReview = async (
     userId,
     restaurantId,
-    rating
+    rating,
+    reviewText,
+    survey,     
+    photos     
     ) => {
 
-    userId = helpers.checkId(userId);
-    restaurantId = helpers.checkId(restaurantId);
+    userId = helpers.checkId(userId, "userId");
+    restaurantId = helpers.checkId(restaurantId, "restaurantId");
     rating = helpers.checkRating(rating);
     
     // round rating
     rating = Math.round(rating * 10) / 10;
+
+    if (!reviewText || typeof reviewText !== "string" || reviewText.trim().length === 0) {
+        throw "Review text is required.";
+    }
+    reviewText = reviewText.trim();
+
+    
+    const serialisedPhotos = (photos || []).map((p) => ({
+        data: Buffer.isBuffer(p.data) ? p.data.toString("base64") : p.data,
+        mimetype: p.mimetype,
+    }));
 
     // throws if object doesn't exist
     const userObject = await userData.getUserById(userId);
@@ -27,10 +190,15 @@ export const createReview = async (
     let date = helpers.currDate();
    
     let newReview = {
-        userID: new ObjectId(userId),
+        userID:new ObjectId(userId),
+        username:userObject.username,
         restaurantID: new ObjectId(restaurantId),
         rating,
-        date,
+        reviewText,
+        survey,
+        photos:serialisedPhotos,
+        date:helpers.currDate(),
+        edited:false,
     };
 
     const reviewCollection = await reviews();
@@ -53,7 +221,7 @@ export const createReview = async (
 
 export const getReviewById = async (reviewId) => {
 
-    reviewId = helpers.checkId(reviewId);
+    reviewId = helpers.checkId(reviewId, "reviewId");
     
     const reviewCollection = await reviews();
     
@@ -70,7 +238,7 @@ export const getReviewById = async (reviewId) => {
 
 export const getReviewsByUser = async (userId) => {
    
-    userId = helpers.checkId(userId);
+    userId = helpers.checkId(userId, "userId");
     
     const reviewCollection = await reviews();
     
@@ -85,7 +253,7 @@ export const getReviewsByUser = async (userId) => {
 
 export const getReviewsByRestaurant = async (restaurantId) => {
 
-    restaurantId = helpers.checkId(restaurantId);
+    restaurantId = helpers.checkId(restaurantId, "restaurantId");
 
     const reviewCollection = await reviews();
 
@@ -100,8 +268,8 @@ export const getReviewsByRestaurant = async (restaurantId) => {
 
 export const addReviewToRestaurant = async (restaurantId, reviewId) => {
 
-    restaurantId = helpers.checkId(restaurantId);
-    reviewId = helpers.checkId(reviewId);
+    restaurantId = helpers.checkId(restaurantId, "restaurantId");
+    reviewId = helpers.checkId(reviewId,"reviewId");
 
     const reviewCollection = await reviews();
     const restaurantCollection = await restaurants();
@@ -134,10 +302,17 @@ export const addReviewToRestaurant = async (restaurantId, reviewId) => {
     return updatedInfo;
 };
 
-export const patchReviewById = async (currUserId, reviewId, newRating) => {
-    
-    reviewId = helpers.checkId(reviewId);
-    currUserId = helpers.checkId(currUserId);
+export const patchReviewById = async (
+    currUserId,
+    reviewId,
+    newRating,
+    newReviewText,
+    newSurvey,
+    newPhotos
+    ) => {
+
+    reviewId = helpers.checkId(reviewId,"reviewId");
+    currUserId = helpers.checkId(currUserId,"currUserId"); 
 
     // throws if user not found
     const userObject = await userData.getUserById(currUserId);
@@ -150,26 +325,48 @@ export const patchReviewById = async (currUserId, reviewId, newRating) => {
         throw 'Review with that restaurant id does not exist';
     }
 
-    newRating = helpers.checkRating(newRating);
 
-    const updatedInfo = await reviewCollection.findOneAndUpdate(
-        {_id: new ObjectId(reviewId)},
-        {$set: {rating: newRating, date: helpers.currDate()}},
-        {returnDocument: 'after'}    
+    let updateFields = { date: helpers.currDate(), edited: true };
+
+    if (newRating !== undefined) {
+        newRating = helpers.checkRating(newRating);
+        updateFields.rating = Math.round(newRating * 10) / 10;
+    }
+
+    if (newReviewText !== undefined) {
+        if (typeof newReviewText !== "string" || newReviewText.trim().length === 0) {
+            throw "Review text cannot be empty.";
+        }
+        updateFields.reviewText = newReviewText.trim();
+    }
+
+    if (newSurvey !== undefined) {
+        updateFields.survey = newSurvey;
+    }
+
+    if (newPhotos !== undefined) {
+        updateFields.photos = (newPhotos).map((p) => ({
+            data: Buffer.isBuffer(p.data) ? p.data.toString("base64") : p.data,
+            mimetype: p.mimetype,
+        }));
+    }
+
+    let updatedInfo = await reviewCollection.findOneAndUpdate(
+        { _id: new ObjectId(reviewId) },
+        { $set: updateFields },
+        { returnDocument: "after" }
     );
 
     if (!updatedInfo) {
-        throw 'Review could not be updated';
+        throw "Review could not be updated.";
     }
-      
     updatedInfo._id = updatedInfo._id.toString();
-
     return updatedInfo;
 };
 
 export const removeReviewById = async (currUserId, reviewId) => {  
-    reviewId = helpers.checkId(reviewId);
-    currUserId = helpers.checkId(currUserId);
+    reviewId = helpers.checkId(reviewId,"reviewId");
+    currUserId = helpers.checkId(currUserId,"currUserId");
 
     // throws if user not found
     const userObject = await userData.getUserById(currUserId);
@@ -192,3 +389,28 @@ export const removeReviewById = async (currUserId, reviewId) => {
     return {_id: deletionInfo._id.toString(), deleted: true};
 };
 
+export const adminDeleteReviewById = async (reviewId) => {
+  reviewId = helpers.checkId(reviewId, "reviewId");
+
+  const reviewCollection = await reviews();
+  const restaurantCollection = await restaurants();
+
+  const deletionInfo = await reviewCollection.findOneAndDelete({
+    _id: new ObjectId(reviewId),
+  });
+
+  if (!deletionInfo) {
+    throw `Could not delete review with review id of ${reviewId}`;
+  }
+
+  await restaurantCollection.updateOne(
+    { _id: deletionInfo.restaurantID },
+    { $pull: { userReviews: reviewId } }
+  );
+
+  return {
+    _id: deletionInfo._id.toString(),
+    deleted: true,
+    restaurantID: deletionInfo.restaurantID.toString(),
+  };
+};

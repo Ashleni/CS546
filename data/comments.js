@@ -238,3 +238,28 @@ export const addReplyByCommentId = async (userId, restaurantId, parentCommentId,
   // returns reply comment result
   return reply;
 };
+
+export const adminDeleteCommentById = async (commentId) => {
+  commentId = helpers.checkId(commentId);
+
+  let commentCollection = await comments(); 
+  let restaurantCollection = await restaurants(); 
+ 
+  let deletionInfo = await commentCollection.findOneAndDelete({ 
+    _id: new ObjectId(commentId),
+  });
+
+  if (!deletionInfo) { 
+    throw `Could not delete comment with comment id of ${commentId}`;
+  } 
+
+  // Remove all reply documents that belong to this comment
+  await commentCollection.deleteMany({ parentId: new ObjectId(commentId) }); 
+
+  await restaurantCollection.updateOne( 
+    { _id: deletionInfo.restaurantID }, 
+    { $pull: { userComments: commentId } }  
+  );
+
+  return { _id: deletionInfo._id.toString(), deleted: true }; 
+};

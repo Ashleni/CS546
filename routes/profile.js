@@ -29,14 +29,31 @@ router.route("/profile/").get(loginGuard, async (req, res) => {
             ...userInfo.publicFollowingRestaurants,
             ...userInfo.privateFollowingRestaurants,
         ]
-
+ 
         let follows = [];
+ 
 
-        if (followIds.length > 0) {
-            userFollows = true;
-            for (let id of followIds) {
-                let restaurant = await restaurants.getRestaurantById(id.toString());
-                follows.push(restaurant.name);
+        if (followIds.length > 0) { 
+            userFollows = true; 
+            for (let id of userInfo.publicFollowingRestaurants) {   
+                try {   
+
+                    let restaurant = await restaurants.getRestaurantById(id.toString());  
+                    follows.push({ name: restaurant.name, restaurantId: id.toString(), isPublic: true });  
+
+                } catch (_) {}
+
+            }
+
+
+            for (let id of userInfo.privateFollowingRestaurants) {
+                try {
+
+                    let restaurant = await restaurants.getRestaurantById(id.toString());
+                    follows.push({ name: restaurant.name, restaurantId: id.toString(), isPublic: false });
+
+                } catch (_) {}
+
             }
         }
 
@@ -52,9 +69,15 @@ router.route("/profile/").get(loginGuard, async (req, res) => {
             for (let r of reviewList) {
                 let restaurant = await restaurants.getRestaurantById(r.restaurantID.toString());
                 let reviewInfo = {
+                    reviewId: r._id.toString(),
+                    restaurantId: r.restaurantID.toString(),
                     restaurant: restaurant.name,
                     rating: r.rating,
-                    date: r.date
+                    reviewText: r.reviewText,
+                    date: r.date,
+                    edited: r.edited,
+                    hasPhotos: r.photos && r.photos.length > 0,
+                    photoCount: r.photos ? r.photos.length : 0,
                 };
                 reviews.push(reviewInfo);
             }
@@ -111,5 +134,42 @@ router.route("/profile/").get(loginGuard, async (req, res) => {
         return res.status(404).render("error", { errorClass: "error", error: e });
     }
 });
+
+router.route("/profile/:username").get(loginGuard, async (req, res) => {
+    try {
+        let username = req.params.username;
+        let profileUser = await userData.getUserByUsername(username);
+        let reviewList = await getReviewsByUser(profileUser._id.toString());
+        let reviews = [];
+        if (reviewList.length > 0) {
+            reviewList.sort((a, b) => new Date(b.date) - new Date(a.date));
+            for (let r of reviewList) {
+                let restaurant = await restaurants.getRestaurantById(r.restaurantID.toString());
+                reviews.push({
+                    reviewId: r._id.toString(),
+                    restaurantId: r.restaurantID.toString(),
+                    restaurant: restaurant.name,
+                    rating: r.rating,
+                    reviewText: r.reviewText,
+                    date: r.date,
+                    edited: r.edited,
+                });
+            }
+        }
+        let follows = [];
+        for (let id of profileUser.publicFollowingRestaurants) {
+            try {
+                let restaurant = await restaurants.getRestaurantById(id.toString());
+                follows.push({ name: restaurant.name, restaurantId: id.toString() });
+            } catch (_) {}
+        }
+        return res.render('publicProfile', {title: `${profileUser.username}'s Profile`, profileUsername: profileUser.username, reviews, follows,hasReviews: reviews.length > 0, hasFollows: follows.length > 0,
+        });
+    } catch (e) {
+        return res.status(404).render("error", { errorClass: "error", error: "User not found." });
+    }
+});
+
+
 
 export default router;

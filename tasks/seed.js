@@ -11,8 +11,7 @@ import helpers from "../helpers.js";
 import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
-import {parse}  from "csv-parse/sync";
-
+import { parse } from "csv-parse/sync";
 
 const clean = (value) => {
   let text = String(value ?? "");
@@ -28,51 +27,50 @@ const loadRestaurantsFromCSV = async (csvPath) => {
   });
 
   let restaurantMap = new Map();
-   
-  for (let row of rows) { 
-    let name =  clean( row.Restaurant );
-    let boro= clean( row.Borough ).toLowerCase(); 
-    let building = clean( row.BUILDING );
-    let street = clean( row.STREET );
-    let zip =  clean( row.ZIPCODE );     
-    let phone = clean( row.PHONE ); 
-    let cuisine = clean( row["CUISINE DESCRIPTION"] ).toLowerCase();
- 
+
+  for (let row of rows) {
+    let name = clean(row.Restaurant);
+    let boro = clean(row.Borough).toLowerCase();
+    let building = clean(row.BUILDING);
+    let street = clean(row.STREET);
+    let zip = clean(row.ZIPCODE);
+    let phone = clean(row.PHONE);
+    let cuisine = clean(row["CUISINE DESCRIPTION"]).toLowerCase();
+
     let key = [name, boro, building, street, zip, phone, cuisine].join("||");
 
-    if (!restaurantMap.has(key)) { 
+    if (!restaurantMap.has(key)) {
       restaurantMap.set(key, {
-        _id: new ObjectId(), 
-        name, 
-        boro, 
-        address:  {
-          _id: new ObjectId(), 
+        _id: new ObjectId(),
+        name,
+        boro,
+        address: {
+          _id: new ObjectId(),
           building,
           street,
-          zip,   
-          },
+          zip,
+        },
         phone,
         cuisine,
-         inspections: [],  
+        inspections: [],
         userReviews: [],
-        userComments: [], 
+        userComments: [],
       });
     }
 
-    restaurantMap.get(key).inspections.push({ 
-      _id: new ObjectId(),  
-      inspectionDate:  clean(row["INSPECTION DATE"]), 
+    restaurantMap.get(key).inspections.push({
+      _id: new ObjectId(),
+      inspectionDate: clean(row["INSPECTION DATE"]),
       action: clean(row.ACTION),
-      violationCode: clean(row["VIOLATION CODE"]), 
+      violationCode: clean(row["VIOLATION CODE"]),
       violationDescription: clean(row["VIOLATION DESCRIPTION"]),
-      criticalFlag: clean(row["CRITICAL FLAG"]),  
-      grade: clean(row.GRADE), 
-    }); 
+      criticalFlag: clean(row["CRITICAL FLAG"]),
+      grade: clean(row.GRADE),
+    });
   }
- 
-  return  [...restaurantMap.values()];
-}; 
 
+  return [...restaurantMap.values()];
+};
 
 const main = async () => {
   const db = await dbConnection();
@@ -442,7 +440,11 @@ const main = async () => {
     },
   ];
 
-  const csvRestaurants = await loadRestaurantsFromCSV(path.resolve("tasks/DOHMH_New_York_City_Restaurant_Inspection_Results_20260423_FILTERED_TRUNCATED.csv"),);
+  const csvRestaurants = await loadRestaurantsFromCSV(
+    path.resolve(
+      "tasks/DOHMH_New_York_City_Restaurant_Inspection_Results_20260423_FILTERED_TRUNCATED.csv",
+    ),
+  );
 
   await restaurantCollection.insertMany([...restaurantData, ...csvRestaurants]);
 
@@ -554,7 +556,7 @@ const main = async () => {
   console.log("Seeding complete");
   console.log("Seeded:");
   console.log(`${userCount} of ${userData.length} users`);
-  console.log(`${restaurantCount} of ${restaurantData.length} restaurants`);
+  console.log(`${restaurantCount} of 2186 restaurants`);
   console.log(`${reviewCount} of ${reviewData.length} reviwes`);
   console.log(`${commentCount} of ${commentData.length} comments`);
 

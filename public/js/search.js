@@ -31,3 +31,25 @@ $("#search-form").submit((event) => {
     return;
   }
 });
+$("#search-form-cleanest").submit((event) => {
+  $("#error").hide();
+  let boro = $("#boro").val().trim().toLowerCase();
+
+  // check boro is valid
+  if (boro === "select") boro = "";
+  const validBoros = [
+    "manhattan",
+    "bronx",
+    "brooklyn",
+    "queens",
+    "staten island",
+  ];
+
+  if (!validBoros.includes(boro) && boro !== "") {
+    event.preventDefault();
+    $("#error").text("Invalid borough!");
+    $("#error").show();
+    $("#username").focus();
+    return;
+  }
+});
