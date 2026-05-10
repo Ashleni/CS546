@@ -127,6 +127,21 @@
               </tbody>
             </table>
           </details> 
+
+          {{
+          #unless 
+            this.isOwnReview}}
+          <div class="review-votes">
+            <form action="/review/{{this._id}}/upvote" method="POST" style="display:inline;">
+              <button type="submit">▲ {{this.upvoteCount}}</button>
+            </form>
+            <form action="/review/{{this._id}}/downvote" method="POST" style="display:inline;">
+              <button type="submit">▼ {{this.downvoteCount}}</button>
+            </form>
+          </div>
+          {{
+          /unless
+          }}
         </article>
       {{/each}}
     {{else}}

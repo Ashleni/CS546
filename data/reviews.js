@@ -199,6 +199,8 @@ export const createReview = async (
         photos:serialisedPhotos,
         date:helpers.currDate(),
         edited:false,
+        upvotes: [],
+        downvotes: [],
     };
 
     const reviewCollection = await reviews();
@@ -387,5 +389,74 @@ export const removeReviewById = async (currUserId, reviewId) => {
         _id: deletionInfo.restaurantID }, { $pull: { userReviews: reviewId} });    
   
     return {_id: deletionInfo._id.toString(), deleted: true};
+};
+
+export const voteOnReview = async (reviewId, votingUserId, voteType) => {
+  reviewId = helpers.checkId(reviewId, "reviewId");
+  votingUserId = helpers.checkId(votingUserId, "votingUserId");
+
+  if (voteType !== "upvote" && voteType !== "downvote") {
+      throw "voteType must be 'upvote' or 'downvote'.";
+  }
+
+  const reviewCollection = await reviews();
+  const review = await reviewCollection.findOne({ _id: new ObjectId(reviewId) });
+
+  if (!review) throw "Review not found.";
+
+  // Prevent the review's own author from voting
+  if (review.userID.toString() === votingUserId) {
+      throw "You cannot vote on your own review.";
+  }
+
+  const alreadyUpvoted  = (review.upvotes  || []).map(id => id.toString()).includes(votingUserId);
+  const alreadyDownvoted = (review.downvotes || []).map(id => id.toString()).includes(votingUserId);
+
+  let updateOp;
+
+  if (voteType === "upvote") {
+      if (alreadyUpvoted) {
+          // Undo upvote
+          updateOp = { $pull: { upvotes: new ObjectId(votingUserId) } };
+      } else {
+          // Add upvote, remove any existing downvote
+          updateOp = {
+              $addToSet: { upvotes: new ObjectId(votingUserId) },
+              $pull:     { downvotes: new ObjectId(votingUserId) },
+          };
+      }
+  } else {
+      if (alreadyDownvoted) {
+          // Undo downvote
+          updateOp = { $pull: { downvotes: new ObjectId(votingUserId) } };
+      } else {
+          // Add downvote, remove any existing upvote
+          updateOp = {
+              $addToSet: { downvotes: new ObjectId(votingUserId) },
+              $pull:     { upvotes:   new ObjectId(votingUserId) },
+          };
+      }
+  }
+
+  const updatedReview = await reviewCollection.findOneAndUpdate(
+      { _id: new ObjectId(reviewId) },
+      updateOp,
+      { returnDocument: "after" }
+  );
+
+  if (!updatedReview) throw "Vote could not be recorded.";
+
+  // Auto-remove if 10+ downvotes
+  if ((updatedReview.downvotes || []).length >= 10) {
+      const restaurantCollection = await restaurants();
+      await reviewCollection.deleteOne({ _id: new ObjectId(reviewId) });
+      await restaurantCollection.updateOne(
+          { _id: updatedReview.restaurantID },
+          { $pull: { userReviews: reviewId } }
+      );
+      return { deleted: true, reason: "Too many downvotes." };
+  }
+
+  return { deleted: false, upvotes: updatedReview.upvotes.length, downvotes: updatedReview.downvotes.length };
 };
 

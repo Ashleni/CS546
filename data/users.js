@@ -203,6 +203,36 @@ let userData = {
   },
 };
 
+export const getTopContributors = async (limit = 10) => {
+  let userCollection = await users();
+  let allUsers = await userCollection
+      .find({})
+      .project({ _id: 1, username: 1, firstName: 1, lastName: 1, reviewsCompleted: 1 })
+      .toArray();
+
+  // Sort by number of reviews, descending
+  allUsers.sort((a, b) => {
+      const aCount = (a.reviewsCompleted || []).length;
+      const bCount = (b.reviewsCompleted || []).length;
+      return bCount - aCount;
+  });
+
+  // Only include users with at least 1 review
+  allUsers = allUsers.filter(u => (u.reviewsCompleted || []).length > 0);
+
+  return allUsers.slice(0, limit).map((u, index) => ({
+      rank: index + 1,
+      _id: u._id.toString(),
+      username: u.username,
+      reviewCount: (u.reviewsCompleted || []).length,
+  }));
+};
+
+const userCollection = await (await import("../config/mongoCollections.js")).users();
+await userCollection.updateOne(
+    { _id: new ObjectId(userId) },
+    { $push: { reviewsCompleted: newId } }
+);
 
 // FOR FOLLOW FEATURE
 

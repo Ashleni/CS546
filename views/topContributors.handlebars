@@ -1,0 +1,18 @@
+<main></main>
+  <h1>Top Contributors</h1>
+  <p>The users who have contributed the most reviews to Delicacy!</p>
+
+  {{#if contributors}}
+    <ol class="leaderboard">
+      {{#each contributors}}
+        <li>
+          <span class="rank">#{{this.rank}}</span>
+          <a href="/profile/{{this._id}}">{{this.username}}</a>
+          — {{this.reviewCount}} review{{#if (gt this.reviewCount 1)}}s{{/if}}
+        </li>
+      {{/each}}
+    </ol>
+  {{else}}
+    <p>No contributors yet. Be the first to leave a review!</p>
+  {{/if}}
+</main>
