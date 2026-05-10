@@ -115,6 +115,7 @@ router.route("/profile/").get(loginGuard, async (req, res) => {
         }
 
         return res.render('userProfile', {
+            title: `${userName}'s Profile`,
             user: {
                 userName,
                 firstName,

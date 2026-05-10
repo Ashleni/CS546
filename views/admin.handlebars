@@ -1,6 +1,7 @@
 <main>
     {{#if adminUser}}
         <h1>Admin Features</h1>
+        <div id="error" class="formError"{{#unless error}} style="display:none"{{/unless}}>{{error}}</div>
         <h2>Create</h2>              
             {{!-- Create --}}
             <div id="createRestaurantDiv" class="form-container">

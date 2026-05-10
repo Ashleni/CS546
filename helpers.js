@@ -19,6 +19,7 @@ Utility Functions:
 
 import bcrypt from "bcrypt";
 import { ObjectId } from "mongodb";
+import xss from "xss";
 
 const exportedMethods = {
   async hashPassword(password) {
@@ -57,6 +58,8 @@ const exportedMethods = {
       throw "message must not be empty";
     }
 
+    message = xss(message);
+
     let repeatingChar = message[0];
     let occurance = 1;
 
@@ -85,6 +88,7 @@ const exportedMethods = {
       throw `Error: ${varName} cannot be an empty string or string with just spaces`;
     if (!isNaN(strVal))
       throw `Error: ${strVal} is not a valid value for ${varName} as it only contains digits`;
+    strVal = xss(strVal);
     return strVal;
   },
 
