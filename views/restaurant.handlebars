@@ -243,9 +243,9 @@
     <!-- Show all public reviews -->
     {{#if publicReviews.length}}
       {{#each publicReviews}}
-        <article class= "review-card">
-          <header class= "review-card-header">
-            <span class= "reviewer-name"><strong>{{this.username}}</strong></span>
+        <article >
+          <header >
+            <span ><strong><a href="/profile/{{this.username}}">{{this.username}}</a></strong></span>
             <span class= "review-rating">&#9733; {{this.rating}}/5</span>
             <span class= "review-date">{{this.date}}{{#if this.edited}} (edited){{/if}}</span>
           </header>
@@ -303,7 +303,7 @@
     {{#if comments.length}}
       {{#each comments}}
       <section class="single-comment">
-        <span><strong>{{this.username}}</strong></span>
+        <span><strong><a href="/profile/{{this.username}}">{{this.username}}</a></strong></span>
         <span>{{this.date}}</span>
         <p>{{this.message}}</p>
             <form action="/restaurant/{{../restaurant._id}}/comment/{{this._id}}/reply" method="POST" name="newReply-form-{{this._id}}" id="newReply-form-{{this._id}}">
@@ -326,7 +326,7 @@
                   <ul>
                   {{#each this.replies}}
                     <li>
-                      <span><strong>{{this.username}}</strong></span>
+                      <span><strong><a href="/profile/{{this.username}}">{{this.username}}</a></strong></span>
                       <span>{{this.date}}</span>
                       <p>{{this.message}}</p>
                     </li>

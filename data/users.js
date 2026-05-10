@@ -50,6 +50,14 @@ let userData = {
     return user;
   },
 
+  async getUserByUsername(username) {
+    username = exportedMethods.checkUsername(username);
+    let userCollection = await users();
+    let user = await userCollection.findOne({ username });
+    if (!user) throw "Error: User not found";
+    return user;
+  },
+
   async addUser(firstName, lastName, username, password, role) {
     let passwordHashed = await exportedMethods.hashPassword(password);
 
@@ -344,6 +352,8 @@ export const removeRestaurantFromAllFollowers = async (restaurantId) => {
     }
   );
 };
+
+
 
 
 export default userData;

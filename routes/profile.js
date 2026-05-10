@@ -134,4 +134,41 @@ router.route("/profile/").get(loginGuard, async (req, res) => {
     }
 });
 
+router.route("/profile/:username").get(loginGuard, async (req, res) => {
+    try {
+        let username = req.params.username;
+        let profileUser = await userData.getUserByUsername(username);
+        let reviewList = await getReviewsByUser(profileUser._id.toString());
+        let reviews = [];
+        if (reviewList.length > 0) {
+            reviewList.sort((a, b) => new Date(b.date) - new Date(a.date));
+            for (let r of reviewList) {
+                let restaurant = await restaurants.getRestaurantById(r.restaurantID.toString());
+                reviews.push({
+                    reviewId: r._id.toString(),
+                    restaurantId: r.restaurantID.toString(),
+                    restaurant: restaurant.name,
+                    rating: r.rating,
+                    reviewText: r.reviewText,
+                    date: r.date,
+                    edited: r.edited,
+                });
+            }
+        }
+        let follows = [];
+        for (let id of profileUser.publicFollowingRestaurants) {
+            try {
+                let restaurant = await restaurants.getRestaurantById(id.toString());
+                follows.push({ name: restaurant.name, restaurantId: id.toString() });
+            } catch (_) {}
+        }
+        return res.render('publicProfile', {title: `${profileUser.username}'s Profile`, profileUsername: profileUser.username, reviews, follows,hasReviews: reviews.length > 0, hasFollows: follows.length > 0,
+        });
+    } catch (e) {
+        return res.status(404).render("error", { errorClass: "error", error: "User not found." });
+    }
+});
+
+
+
 export default router;

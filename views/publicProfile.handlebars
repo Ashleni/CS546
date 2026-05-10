@@ -1,0 +1,36 @@
+<main>
+  <a href="/home">Back to Search</a>
+
+  <h1>{{profileUsername}}'s Profile</h1>
+
+  <section>
+    <h2>Reviews</h2>
+    {{#if hasReviews}}
+      <ol>
+        {{#each reviews}}
+          <li>
+            <strong><a href="/restaurant/{{this.restaurantId}}">{{this.restaurant}}</a></strong>
+            <span>&#9733; {{this.rating}}/5</span>
+            <p>{{this.reviewText}}</p>
+            <p>Posted {{this.date}}{{#if this.edited}} | <em>edited</em>{{/if}}</p>
+          </li>
+        {{/each}}
+      </ol>
+    {{else}}
+      <p>No reviews yet.</p>
+    {{/if}}
+  </section>
+
+  <section>
+    <h2>Public Following</h2>
+    {{#if hasFollows}}
+      <ul>
+        {{#each follows}}
+          <li><a href="/restaurant/{{this.restaurantId}}">{{this.name}}</a></li>
+        {{/each}}
+      </ul>
+    {{else}}
+      <p>Not publicly following any restaurants.</p>
+    {{/if}}
+  </section>
+</main>
