@@ -24,13 +24,41 @@
             <a href="#tab3">Comments</a>
 
             <h3 id="tab1">Following</h3>
+
             {{#if userFollows}}
-                <ul>
-                    {{#each follows}}
-                        <li>{{this}}</li>
-                    {{/each}}
-                </ul>
-            {{else}} <p>You have no followed restaurants</p>
+            <ul>
+                {{#each follows}}
+                <li>
+                    <a href="/restaurant/{{this.restaurantId}}">
+                    {{this.name}}
+                    </a>
+
+                    {{#if this.isPublic}}
+                    <span>Public</span>
+                    {{else}}
+                    <span>Private</span>
+                    {{/if}}
+
+                    <form action="/restaurant/{{this.restaurantId}}/follow/visibility" method="POST">
+                    <select name="visibility">
+                        <option value="public">Public</option>
+                        <option value="private">Private</option>
+                    </select>
+
+                    <button type="submit">Change</button>
+                    </form>
+
+                    <form action="/restaurant/{{this.restaurantId}}/unfollow" method="POST">
+                    <button type="submit">Unfollow</button>
+                    </form>
+                </li>
+                {{/each}}
+            </ul>
+
+            {{else}}
+
+            <p>You have no followed restaurants.</p>
+
             {{/if}}
 
             <h3 id="tab2">Reviews</h3>

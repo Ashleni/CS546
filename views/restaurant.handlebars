@@ -3,8 +3,44 @@
 
   <header>
     <h1>{{restaurant.name}}</h1>
-    {{#if userIsFollowing}}<button type="submit" name="unfollow_restaurant_button" id="unfollow_restaurant_button">Unfollow Restaurant</button>
-    {{else}}<button type="submit" name="follow_restaurant_button" id="follow_restaurant_button">Follow Restaurant</button>{{/if}}
+
+
+    <!--  Follow button logic -->
+    {{#if userIsFollowing}}
+        <p>
+          Following  {{followVisibility}}
+        </p>
+
+        <form action="/restaurant/{{restaurant._id}}/follow/visibility" method="POST"> 
+ 
+          <label> 
+            Change visibility:
+            <select name="visibility"> 
+              <option value="public">Public</option>
+              <option value="private">Private</option>
+            </select> 
+          </label>
+          <button type="submit">Update</button>
+        </form>
+
+        <form action="/restaurant/{{restaurant._id}}/unfollow" method="POST" >
+          <button type="submit" >Unfollow</button> 
+        </form>
+ 
+    {{else}}
+      <form action="/restaurant/{{restaurant._id}}/follow" method="POST" > 
+        <label >
+          Follow as: 
+          <select name="visibility">
+            <option value="public">Public</option> 
+            <option value="private">Private</option>
+          </select>  
+        </label>
+        <button type="submit" >Follow Restaurant</button>
+      </form>
+    {{/if}}
+
+
     <p><strong>Average Rating:</strong> {{#if avgRating}}{{avgRating}}/5{{else}}This restaurant has not been rated yet!{{/if}}</p>
     <span>Cuisine: {{#if restaurant.cuisine}}{{restaurant.cuisine}}{{else}}N/A{{/if}}</span>
     <span>Borough: {{#if restaurant.boro}}{{restaurant.boro}}{{else}}N/A{{/if}}</span>

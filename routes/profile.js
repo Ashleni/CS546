@@ -28,14 +28,31 @@ router.route("/profile/").get(loginGuard, async (req, res) => {
             ...userInfo.publicFollowingRestaurants,
             ...userInfo.privateFollowingRestaurants,
         ]
-
+ 
         let follows = [];
+ 
 
-        if (followIds.length > 0) {
-            userFollows = true;
-            for (let id of followIds) {
-                let restaurant = await restaurants.getRestaurantById(id.toString());
-                follows.push(restaurant.name);
+        if (followIds.length > 0) { 
+            userFollows = true; 
+            for (let id of userInfo.publicFollowingRestaurants) {   
+                try {   
+
+                    let restaurant = await restaurants.getRestaurantById(id.toString());  
+                    follows.push({ name: restaurant.name, restaurantId: id.toString(), isPublic: true });  
+
+                } catch (_) {}
+
+            }
+
+
+            for (let id of userInfo.privateFollowingRestaurants) {
+                try {
+
+                    let restaurant = await restaurants.getRestaurantById(id.toString());
+                    follows.push({ name: restaurant.name, restaurantId: id.toString(), isPublic: false });
+
+                } catch (_) {}
+
             }
         }
 

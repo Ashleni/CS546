@@ -2,6 +2,8 @@ import { ObjectId } from "mongodb";
 import { restaurants } from "../config/mongoCollections.js";
 import helpers from "../helpers.js";
 import Fuse from "fuse.js";
+import { removeRestaurantFromAllFollowers } from "./users.js";
+
 
 /**
  * Create a restaurant profile with the specified information.
@@ -571,6 +573,10 @@ export const removeRestaurant = async (id) => {
 
   if (!deletedRestaurant)
     throw `Error: Could not delete restaurant with id '${id}'!`;
+
+  // Remove this restaurant from every user's following lists
+  await removeRestaurantFromAllFollowers(id);
+  
   return { name: deletedRestaurant.name, deleted: true };
 };
 

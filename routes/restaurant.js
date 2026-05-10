@@ -8,7 +8,7 @@ import {getReviewsByRestaurant, createReview, patchReviewById,
   getReviewById, SURVEY_QUESTIONS, validateSurvey,} from "../data/reviews.js";
 import userData from "../data/users.js";
 import multer from "multer";
-
+import {followRestaurant, unfollowRestaurant, updateFollowVisibility} from "../data/users.js";
 
 // set up multer, taken from https://blog.openreplay.com/multer-npm-file-upload-nodejs/
 let storage = multer.memoryStorage();
@@ -182,11 +182,18 @@ router.route("/restaurant/:id").get(loginGuard, async (req, res) => {
     // is user following?
     const userInfo = await userData.getUserById(req.session.user._id);
     let userIsFollowing = false;
-    let following = [
-      ...userInfo.publicFollowingRestaurants,
-      ...userInfo.privateFollowingRestaurants,
-    ].map((id) => id.toString());
-    if (following.includes(id)) userIsFollowing = true;
+    let followVisibility = null; // null or "public" or "private" 
+  
+    const publicIds = userInfo.publicFollowingRestaurants.map((i)  =>  i.toString()); 
+    const privateIds = userInfo.privateFollowingRestaurants.map((i)  =>  i.toString());
+
+    if (publicIds.includes(id)) {
+      userIsFollowing  = true;
+      followVisibility = "public";
+    } else if (privateIds.includes(id)) {
+      userIsFollowing  = true;
+      followVisibility = "private";
+    }
 
     return res.render("restaurant", {
       title: data.name,
@@ -445,5 +452,67 @@ router.route("/restaurant/:id/comment/:commentId/reply").post(loginGuard, async 
   return res.redirect(`/restaurant/${restaurantId}`);
 });
 
+// FOLLOW FEATURE
+router.route("/restaurant/:id/follow").post(loginGuard, async (req, res) => {
+  let restaurantId;  
+  try { 
+    restaurantId = helpers.checkId(req.params.id, "restaurantId"); 
+  } catch (e) { 
+    return res.status(400).render("error", {errorClass: "error", error: e});
+  }
+
+  try { 
+    await restaurants.getRestaurantById(restaurantId);
+  } catch (e) { 
+    return res.status(404).render("error", {errorClass: "error", error: e});
+  }
+
+  // right now, the follow will default to public
+  const isPublic = req.body.visibility !== "private"; 
+
+  try { 
+    await followRestaurant(req.session.user._id, restaurantId, isPublic);
+  } catch (e) {  
+    return res.status(400).render("error", {errorClass: "error", error: e}); 
+  }
+
+  return res.redirect(`/restaurant/${restaurantId}`);   
+});
+
+router.route("/restaurant/:id/unfollow").post(loginGuard, async (req, res) => {
+  let restaurantId;  
+  try { 
+    restaurantId = helpers.checkId(req.params.id, "restaurantId");
+  } catch (e) { 
+    return res.status(400).render("error", {errorClass: "error", error: e});
+  } 
+
+  try { 
+    await unfollowRestaurant(req.session.user._id, restaurantId);
+  } catch (e) { 
+    return res.status(400).render("error", {errorClass: "error", error: e}); 
+  } 
+
+  return res.redirect(`/restaurant/${restaurantId}`);   
+});
+
+router.route("/restaurant/:id/follow/visibility").post(loginGuard, async (req, res) => {
+  let restaurantId; 
+  try {   
+    restaurantId = helpers.checkId(req.params.id, "restaurantId" );
+  } catch (e) {  
+    return res.status(400).render("error", {errorClass: "error", error: e});
+  } 
+ 
+  const makePublic = req.body.visibility !== "private"; 
+ 
+  try {  
+     await updateFollowVisibility(req.session.user._id, restaurantId, makePublic);
+  } catch (e) {  
+    return res.status(400).render("error", {errorClass: "error", error: e});
+  } 
+
+  return res.redirect(`/restaurant/${restaurantId}`);   
+});
 
 export default router;

@@ -203,4 +203,147 @@ let userData = {
   },
 };
 
+
+// FOR FOLLOW FEATURE
+
+// follow restaurant priv or public
+export const followRestaurant = async (userId, restaurantId, isPublic) => {
+  userId= exportedMethods.checkId(userId,"userId");
+  restaurantId = exportedMethods.checkId(restaurantId, "restaurantId");
+  
+  let userCollection = await users(); 
+  let user = await userCollection.findOne({ _id: new ObjectId(userId) }); 
+  if (!user) {
+    throw "User not found";  
+
+  }
+     
+  let restaurantObjId = new ObjectId(restaurantId);  
+   
+  let alreadyPublic  = user.publicFollowingRestaurants.some((id) => id.toString() === restaurantId  ); 
+  let alreadyPrivate = user.privateFollowingRestaurants.some((id) => id.toString() === restaurantId); 
+ 
+  if (alreadyPublic || alreadyPrivate) {
+    throw "You are already following this restaurant."; 
+  }
+ 
+  let field = isPublic ? "publicFollowingRestaurants" :  "privateFollowingRestaurants";
+
+  let result = await userCollection.findOneAndUpdate( 
+    { _id: new ObjectId(userId)}, 
+    { $push: { [field]: restaurantObjId }},
+    { returnDocument: "after"} 
+  ); 
+
+  if (!result) {
+    throw  "Could not follow restaurant."; 
+  }
+  return result;
+};
+
+//unfollow restaurant priv or public
+export const unfollowRestaurant = async (userId, restaurantId) => {
+  userId= exportedMethods.checkId(userId,"userId");
+  restaurantId = exportedMethods.checkId(restaurantId, "restaurantId");
+
+  let userCollection = await users();
+  let user = await userCollection.findOne({ _id: new ObjectId(userId) });
+  if (!user){ 
+    throw "Error: User not found";
+  }
+
+  let restaurantObjId = new ObjectId(restaurantId);
+
+  let inPublic  = user.publicFollowingRestaurants.some((id) => id.toString() === restaurantId);
+  let inPrivate = user.privateFollowingRestaurants.some((id) => id.toString() === restaurantId);
+
+  if (!inPublic && !inPrivate) {
+    throw "You are not following this restaurant.";
+  }
+
+  let result = await userCollection.findOneAndUpdate(
+    { _id: new ObjectId(userId) },
+    {
+      $pull: {
+        publicFollowingRestaurants:  restaurantObjId,
+        privateFollowingRestaurants: restaurantObjId,
+      },
+    },
+    { returnDocument: "after" }
+  );
+
+  if (!result) {
+    throw "Error: Could not unfollow restaurant.";
+  }
+  return result;
+};
+
+// change visibility 
+
+export const updateFollowVisibility = async (userId, restaurantId, makePublic) => {
+  userId= exportedMethods.checkId(userId,"userId");
+  restaurantId = exportedMethods.checkId(restaurantId, "restaurantId");
+
+  let userCollection = await users();
+  let user = await userCollection.findOne({ _id: new ObjectId(userId) });
+  if (!user){ 
+    throw "Error: User not found";
+
+  }
+
+  let restaurantObjId = new ObjectId(restaurantId);
+
+  let inPublic = user.publicFollowingRestaurants.some((id) => id.toString() === restaurantId);
+  let inPrivate = user.privateFollowingRestaurants.some((id) => id.toString() === restaurantId);
+
+  if (!inPublic && !inPrivate){ 
+    throw "You are not following this restaurant.";
+
+  }
+
+  if (makePublic && inPublic){   
+    return user;
+  }
+  if (!makePublic && inPrivate){ 
+    return user;
+  }
+
+  let removeFrom = makePublic ? "privateFollowingRestaurants" : "publicFollowingRestaurants";
+  let addTo= makePublic ? "publicFollowingRestaurants"  : "privateFollowingRestaurants";
+
+  let result = await userCollection.findOneAndUpdate(
+    { _id: new ObjectId(userId) },
+    {
+      $pull: {[removeFrom]: restaurantObjId},
+      $push: {[addTo]:restaurantObjId },
+    },
+    { returnDocument: "after"}
+  );
+
+  if (!result){ 
+    throw "Error: Could not update follow visibility.";
+  }
+  return result;
+};
+
+
+// Called when a restaurant is deleted removes it from every users lists.
+export const removeRestaurantFromAllFollowers = async (restaurantId) => {
+  restaurantId = exportedMethods.checkId(restaurantId, "restaurantId");
+
+  let userCollection = await users();
+  let restaurantObjId = new ObjectId(restaurantId);
+
+  await userCollection.updateMany(
+    {},
+    {
+      $pull: {
+        publicFollowingRestaurants:  restaurantObjId,
+        privateFollowingRestaurants: restaurantObjId,
+      },
+    }
+  );
+};
+
+
 export default userData;
