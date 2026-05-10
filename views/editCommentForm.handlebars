@@ -1,0 +1,24 @@
+<main class="comment-form-page"> 
+    <a href= "/restaurant/{{restaurant._id}}" class= "back-link">Back to {{restaurant.name}}</a> 
+    <h1> Edit Your Comment </h1>
+    <p class="restaurant-subtitle">{{restaurant.name}} - {{restaurant.boro}}</p>
+
+    {{#if error}}
+    <div class="form-error-banner">{{error}}</div>  
+    {{/if}}
+ 
+    <h3>Original Comment</h3>
+    <span><strong>{{comment.date}}</strong></span>
+    <p>{{comment.message}}</p>
+
+    <form
+    action= "/restaurant/{{restaurant._id}}/comment/{{comment._id}}/edit"
+    method= "POST"
+    class= "comment-form">
+        <label for="message">
+        Post edited Comment
+        <textarea name="message" id="message" placeholder="{{comment.message}}"></textarea>
+        </label>
+        <button type="submit" name="postMessageButton" id="postMessageButton">Post</button> 
+    </form>  
+</main>
