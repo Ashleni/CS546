@@ -1,4 +1,4 @@
-$("newComment-form").submit((event) => {
+$("#newComment-form").submit((event) => {
   $("#error").hide();
 
   let message = $("#message").val().trim();
@@ -17,18 +17,22 @@ $("newComment-form").submit((event) => {
   for (let i = 0; i < message.length - 1; i++) {
     let currChar = message[i];
     let nextChar = message[i + 1];
-    if (currChar == repeatingChar) {
+
+    if (currChar === repeatingChar) {
       occurance += 1;
-      if (occurance == 5) {
+      if (occurance === 5) {
         event.preventDefault();
         $("#error").text("Your comment can't have repeating characters!");
         $("#error").show();
         $("#message").focus();
         return;
       }
-    } else if (currChar == nextChar && currChar != repeatingChar) {
+    } else if (currChar === nextChar) {
       repeatingChar = currChar;
-      occurance = 2;
-    } else occurance = 1;
+      occurance = 2; 
+    } else {
+      repeatingChar = null;
+      occurance = 1;
+    }
   }
 });

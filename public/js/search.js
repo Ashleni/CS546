@@ -9,7 +9,7 @@ $("#search-form").submit((event) => {
     event.preventDefault();
     $("#error").text("At least one search term must be given!");
     $("#error").show();
-    $("#username").focus();
+    $("#name").focus();
     return;
   }
 
@@ -27,7 +27,7 @@ $("#search-form").submit((event) => {
     event.preventDefault();
     $("#error").text("Invalid borough!");
     $("#error").show();
-    $("#username").focus();
+    $("#boro").focus();
     return;
   }
 });
@@ -49,7 +49,7 @@ $("#search-form-cleanest").submit((event) => {
     event.preventDefault();
     $("#error").text("Invalid borough!");
     $("#error").show();
-    $("#username").focus();
+    $("#boro").focus();
     return;
   }
 });

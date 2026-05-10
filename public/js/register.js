@@ -1,7 +1,7 @@
 $("#signup-form").submit((event) => {
   $("#error").hide();
 
-  let nameRegex = /^[A-Za-z'-]{1,50}$/;
+  let nameRegex = /^[A-Za-z0-9_.]{3,30}$/
   let usernameRegex = /^[A-Za-z0-9_.]{3,30}$/;
   let passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])\S{8,}$/;
 
@@ -39,7 +39,7 @@ $("#signup-form").submit((event) => {
     event.preventDefault();
     $("#error").text("Last Name is invalid!");
     $("#error").show();
-    $("#firstName").focus();
+    $("#lastName").focus();
     return;
   }
 

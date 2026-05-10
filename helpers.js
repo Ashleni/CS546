@@ -47,31 +47,31 @@ const exportedMethods = {
       throw "message parameter needs to have valid value";
     }
 
-    if (typeof message != "string") {
+    if (typeof message !== "string") {
       throw "message parameter must be string";
     }
 
     message = message.trim();
 
-    if (message.length == 0) {
+    if (message.length === 0) {
       throw "message must not be empty";
     }
 
-    let repeatingChar = null;
+    let repeatingChar = message[0];
     let occurance = 1;
 
-    for (let i = 0; i < message.length - 1; i++) {
+    for (let i = 1; i < message.length; i++) {
       let currChar = message[i];
-      let nextChar = message[i + 1];
-      if (currChar == repeatingChar) {
+
+      if (currChar === repeatingChar) {
         occurance += 1;
-        if (occurance == 5) {
+        if (occurance === 5) {
           throw "message parameter repeats the same character >= 5 times";
         }
-      } else if (currChar == nextChar && currChar != repeatingChar) {
+      } else {
         repeatingChar = currChar;
-        occurance = 2;
-      } else occurance = 1;
+        occurance = 1;
+      }
     }
 
     return message;
@@ -284,30 +284,36 @@ const exportedMethods = {
     s = this.checkString(s, varName);
     if (s.length < 8)
       throw `Error: '${varName}' must be at least 8 characters!`;
+
     const uppercaseLetters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     const numbers = "1234567890";
+    const specialChars = "!@#$%^&*()-_=+[]{}|;:'\",.<>?/`~"; // define allowed special characters
     let containsUpper = false;
-    let conatinsNumber = false;
+    let containsNumber = false;
     let containsSpecial = false;
 
     for (let i = 0; i < s.length; i++) {
-      if (s[i] === " ") throw `Error: '${varName}' cannot contain a space!`;
-      if (!containsUpper && uppercaseLetters.includes(s[i])) {
+      const char = s[i];
+
+      if (char === " ") throw `Error: '${varName}' cannot contain a space!`;
+
+      if (!containsUpper && uppercaseLetters.includes(char)) {
         containsUpper = true;
         continue;
       }
-      if (uppercaseLetters.toLowerCase().includes(s[i])) continue;
-      if (!conatinsNumber && numbers.includes(s[i])) {
-        conatinsNumber = true;
+
+      if (!containsNumber && numbers.includes(char)) {
+        containsNumber = true;
         continue;
       }
-      if (!containsSpecial) {
+
+      if (!containsSpecial && specialChars.includes(char)) {
         containsSpecial = true;
         continue;
       }
     }
 
-    if (!(containsSpecial && conatinsNumber && containsUpper))
+    if (!(containsUpper && containsNumber && containsSpecial))
       throw `Error: '${varName}' must have at least one number, one uppercase letter, and one special character!`;
 
     return s;

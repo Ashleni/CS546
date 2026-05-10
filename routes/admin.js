@@ -76,7 +76,9 @@ router.route("/admin/restaurant/:id/update").post(loginGuard, async (req, res) =
         if (updateInfo.street) addressObj.street = exportedMethods.checkString(updateInfo.street);
         if (updateInfo.zip) addressObj.zip = exportedMethods.checkZipCode(updateInfo.zip);
 
-        updateObject.address = addressObj;
+        if (Object.keys(addressObj).length > 0) {
+            updateObject.address = addressObj;
+}
 
         let patchedObject = await restaurants.patchRestaurant(req.params.id, updateObject);
         return res.redirect("/admin");
