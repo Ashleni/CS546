@@ -5,6 +5,8 @@
 
     <p>Find restaurants by name, borough, and/or cuisine type!</p>
 
+    <div id="error" class="formError"{{#unless error}} style="display:none"{{/unless}}>{{error}}</div>
+
     <form action="/searchResults" method="post" id="search-form">
         <label for="name">
             Restaurant Name

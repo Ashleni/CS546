@@ -114,6 +114,100 @@ function formatSurveyAnswer(question, value) {
   return value;
 }
 
+async function buildRestaurantPageData(req, restaurantId, extra = {}) {
+  let data = await restaurants.getRestaurantById(restaurantId);
+
+  data.inspections.sort((a, b) => new Date(b.inspectionDate) - new Date(a.inspectionDate));
+
+  let reviewData = await getReviewsByRestaurant(restaurantId);
+  let sumReviews = 0;
+  let avgRating = "";
+  let userReview = null;
+
+  if (reviewData.length > 0) {
+    for (let r of reviewData) {
+      sumReviews += r.rating;
+      if (r.userID.toString() === req.session.user._id) {
+        userReview = {
+          _id: r._id.toString(),
+          rating: r.rating,
+          reviewText: r.reviewText,
+          survey: r.survey,
+          photos: r.photos,
+          date: r.date,
+          edited: r.edited,
+        };
+      }
+    }
+    avgRating = (sumReviews / reviewData.length).toFixed(1);
+  }
+
+  let publicReviews = reviewData.map((r) => ({
+    _id: r._id.toString(),
+    username: r.username,
+    rating: r.rating,
+    reviewText: r.reviewText,
+    photos: r.photos || [],
+    date: r.date,
+    edited: r.edited,
+    surveyRows: SURVEY_QUESTIONS.map((q) => ({
+      label: q.label,
+      answer: r.survey ? formatSurveyAnswer(q, r.survey[q.key]) : "—",
+    })),
+  }));
+
+  let commentData = [];
+  try {
+    commentData = await getCommentsByRestaurant(restaurantId);
+    commentData.sort((a, b) => new Date(b.date) - new Date(a.date));
+  } catch (_) {}
+
+  const userInfo = await userData.getUserById(req.session.user._id);
+  let userIsFollowing = false;
+  let followVisibility = null;
+  const publicIds = userInfo.publicFollowingRestaurants.map((i) => i.toString());
+  const privateIds = userInfo.privateFollowingRestaurants.map((i) => i.toString());
+
+  if (publicIds.includes(restaurantId)) {
+    userIsFollowing = true;
+    followVisibility = "public";
+  } else if (privateIds.includes(restaurantId)) {
+    userIsFollowing = true;
+    followVisibility = "private";
+  }
+
+  const BOROS = ["Manhattan", "Brooklyn", "Queens", "Bronx", "Staten Island"];
+  const adminBoroOptions = BOROS.map((b) => ({
+    value: b,
+    label: b,
+    selected: b === data.boro,
+  }));
+
+  return {
+    title: data.name,
+    restaurant: data,
+    userIsFollowing,
+    followVisibility,
+    isAdmin: req.session.user.role.toLowerCase() === "admin",
+    avgRating,
+    userReview,
+    publicReviews,
+    comments: commentData,
+    commentCount: commentData.length,
+    adminBoroOptions,
+    ...extra,
+  };
+}
+
+async function renderRestaurantPage(res, req, restaurantId, status, error, extra = {}) {
+  try {
+    const data = await buildRestaurantPageData(req, restaurantId, { error, ...extra });
+    return res.status(status).render("restaurant", data);
+  } catch (e) {
+    return res.status(status).render("error", { errorClass: "error", error: error || e });
+  }
+}
+
 
 router.route("/restaurant/:id").get(loginGuard, async (req, res) => {
   let id;
@@ -424,8 +518,8 @@ router.route("/restaurant/:id/comment").post(loginGuard,  async (req, res) => {
     userId = helpers.checkId(req.session.user._id, "userId");
     message = helpers.checkMessage(req.body.message);
   } catch (e) {
-    if (isAjax) return res.status(400).json({ success: false, error: String(e) });
-    return res.status(404).render("error", { errorClass: "error", error: e });
+    if (isAjax) return res.status(200).json({ success: false, error: String(e) });
+    return renderRestaurantPage(res, req, req.params.id, 400, e);
   }
 
   let comment;
@@ -433,17 +527,17 @@ router.route("/restaurant/:id/comment").post(loginGuard,  async (req, res) => {
     comment = await createComment(userId, restaurantId, message);
   } catch (e) {
     if (isAjax) return res.status(500).json({ success: false, error: String(e) });
-    return res.status(404).render("error", { errorClass: "error", error: e });
+    return renderRestaurantPage(res, req, restaurantId, 400, e);
   }
 
   if (isAjax) {
     return res.status(200).json({
       success: true,
       comment: {
-        _id:      comment._id.toString(),
+        _id: comment._id.toString(),
         username: comment.username,
-        message:  comment.message,
-        date:     comment.date,
+        message: comment.message,
+        date: comment.date,
       },
     });
   }
@@ -474,7 +568,6 @@ router.route("/restaurant/:id/comment/:commentId/edit").get(loginGuard, async (r
   }
 });
 
-// PUT request to update an existing review
 router.route("/restaurant/:id/comment/:commentId/edit").post(loginGuard, async (req, res) => {
   try { 
     const restaurantId = helpers.checkId(req.params.id, "restaurantId");
@@ -491,11 +584,24 @@ router.route("/restaurant/:id/comment/:commentId/edit").post(loginGuard, async (
 
     return res.redirect(`/restaurant/${restaurantId}`);
   } catch (e) {
-    return res.status(400).render("error", { errorClass: "error", error: e });
+    try {
+      const restaurantId = helpers.checkId(req.params.id, "restaurantId");
+      const restaurant = await restaurants.getRestaurantById(restaurantId);
+      const comment = await getCommentById(helpers.checkId(req.params.commentId, "commentId"));
+      return res.status(400).render('editCommentForm', {
+        title: `Edit Your Comment - ${restaurant.name}`,
+        restaurant,
+        comment,
+        error: e,
+      });
+    } catch (_) {
+      return res.status(400).render("error", { errorClass: "error", error: e });
+    }
   }
-  });
+});
 
 router.route("/restaurant/:id/comment/:commentId/reply").post(loginGuard, async (req, res) => {
+  const isAjax = req.headers["x-requested-with"] === "XMLHttpRequest";
   let restaurantId;
   let userId;
   let parentCommentId;
@@ -505,106 +611,116 @@ router.route("/restaurant/:id/comment/:commentId/reply").post(loginGuard, async 
     restaurantId = helpers.checkId(req.params.id, "restaurantId");
     userId = helpers.checkId(req.session.user._id, "userId");
     parentCommentId = helpers.checkId(req.params.commentId, "parentCommentId");
-    replyMessage = helpers.checkMessage(req.body.reply);
+    replyMessage = helpers.checkMessage(req.body.reply ?? req.body.message);
   } catch (e) {
-    return res.status(404).render("error", { errorClass: "error", error: e });
+    if (isAjax) return res.status(200).json({ success: false, error: String(e) });
+    return renderRestaurantPage(res, req, req.params.id, 400, e);
   }
 
   try {
     const reply = await addReplyByCommentId(userId, restaurantId, parentCommentId, replyMessage);
 
+    if (isAjax) {
+      return res.status(200).json({
+        success: true,
+        reply: {
+          _id: reply._id.toString(),
+          username: reply.username,
+          message: reply.message,
+          date: reply.date,
+          parentCommentId: parentCommentId.toString(),
+        },
+      });
+    }
   } catch (e) {
-    return res.status(404).render("error", { errorClass: "error", error: e });
+    if (isAjax) return res.status(200).json({ success: false, error: String(e) });
+    return renderRestaurantPage(res, req, restaurantId, 400, e);
   }
 
   return res.redirect(`/restaurant/${restaurantId}`);
 });
 
-// FOLLOW FEATURE
 router.route("/restaurant/:id/follow").post(loginGuard, async (req, res) => {
-  let restaurantId;  
-  try { 
-    restaurantId = helpers.checkId(req.params.id, "restaurantId"); 
-  } catch (e) { 
-    return res.status(400).render("error", {errorClass: "error", error: e});
+  let restaurantId;
+  try {
+    restaurantId = helpers.checkId(req.params.id, "restaurantId");
+  } catch (e) {
+    return renderRestaurantPage(res, req, req.params.id, 400, e);
   }
 
-  try { 
+  try {
     await restaurants.getRestaurantById(restaurantId);
-  } catch (e) { 
-    return res.status(404).render("error", {errorClass: "error", error: e});
+  } catch (e) {
+    return renderRestaurantPage(res, req, restaurantId, 404, e);
   }
 
-  // right now, the follow will default to public
-  const isPublic = req.body.visibility !== "private"; 
+  const isPublic = req.body.visibility !== "private";
 
-  try { 
+  try {
     await followRestaurant(req.session.user._id, restaurantId, isPublic);
-  } catch (e) {  
-    return res.status(400).render("error", {errorClass: "error", error: e}); 
+  } catch (e) {
+    return renderRestaurantPage(res, req, restaurantId, 400, e);
   }
 
-  return res.redirect(`/restaurant/${restaurantId}`);   
+  return res.redirect(`/restaurant/${restaurantId}`);
 });
 
 router.route("/restaurant/:id/unfollow").post(loginGuard, async (req, res) => {
-  let restaurantId;  
-  try { 
+  let restaurantId;
+  try {
     restaurantId = helpers.checkId(req.params.id, "restaurantId");
-  } catch (e) { 
-    return res.status(400).render("error", {errorClass: "error", error: e});
-  } 
+  } catch (e) {
+    return renderRestaurantPage(res, req, req.params.id, 400, e);
+  }
 
-  try { 
+  try {
     await unfollowRestaurant(req.session.user._id, restaurantId);
-  } catch (e) { 
-    return res.status(400).render("error", {errorClass: "error", error: e}); 
-  } 
+  } catch (e) {
+    return renderRestaurantPage(res, req, restaurantId, 400, e);
+  }
 
-  return res.redirect(`/restaurant/${restaurantId}`);   
+  return res.redirect(`/restaurant/${restaurantId}`);
 });
 
 router.route("/restaurant/:id/follow/visibility").post(loginGuard, async (req, res) => {
-  let restaurantId; 
-  try {   
-    restaurantId = helpers.checkId(req.params.id, "restaurantId" );
-  } catch (e) {  
-    return res.status(400).render("error", {errorClass: "error", error: e});
-  } 
- 
-  const makePublic = req.body.visibility !== "private"; 
- 
-  try {  
-     await updateFollowVisibility(req.session.user._id, restaurantId, makePublic);
-  } catch (e) {  
-    return res.status(400).render("error", {errorClass: "error", error: e});
-  } 
+  let restaurantId;
+  try {
+    restaurantId = helpers.checkId(req.params.id, "restaurantId");
+  } catch (e) {
+    return renderRestaurantPage(res, req, req.params.id, 400, e);
+  }
 
-  return res.redirect(`/restaurant/${restaurantId}`);   
+  const makePublic = req.body.visibility !== "private";
+
+  try {
+    await updateFollowVisibility(req.session.user._id, restaurantId, makePublic);
+  } catch (e) {
+    return renderRestaurantPage(res, req, restaurantId, 400, e);
+  }
+
+  return res.redirect(`/restaurant/${restaurantId}`);
 });
 
-
-// ADMIN ROUTES
 router.route("/restaurant/:id/admin/edit").post(adminGuard, async (req, res) => {
-  let id; 
-  try { 
-    id = helpers.checkId(req.params.id, "Restaurant ID"); 
-  } catch (e) { 
-    return res.status(400).render("error", { errorClass: "error", error: e }); 
+  let id;
+  try {
+    id = helpers.checkId(req.params.id, "Restaurant ID");
+  } catch (e) {
+    return renderRestaurantPage(res, req, req.params.id, 400, e);
   }
 
   const updateObject = {};
   if (req.body.name){
-    updateObject.name= req.body.name;
+    updateObject.name = req.body.name;
   }
   if (req.body.cuisine) {
     updateObject.cuisine = req.body.cuisine;
   }
   if (req.body.boro){
-    updateObject.boro= req.body.boro;
+    updateObject.boro = req.body.boro;
   }
   if (req.body.phone){
-    updateObject.phone= req.body.phone;
+    updateObject.phone = req.body.phone;
   }
 
   const addressFields = {};
@@ -612,10 +728,10 @@ router.route("/restaurant/:id/admin/edit").post(adminGuard, async (req, res) => 
     addressFields.building = req.body.building;
   }
   if (req.body.street){
-    addressFields.street= req.body.street;
+    addressFields.street = req.body.street;
   }
   if (req.body.zip){
-    addressFields.zip= req.body.zip;
+    addressFields.zip = req.body.zip;
   }
   if (Object.keys(addressFields).length > 0){ 
     updateObject.address = addressFields;
@@ -628,19 +744,18 @@ router.route("/restaurant/:id/admin/edit").post(adminGuard, async (req, res) => 
   try {
     await restaurants.patchRestaurant(id, updateObject);
   } catch (e) {
-    return res.status(400).render("error", { errorClass: "error", error: String(e) });
+    return renderRestaurantPage(res, req, id, 400, e);
   }
 
   return res.redirect(`/restaurant/${id}`);
 });
-
 
 router.route("/restaurant/:id/admin/inspection").post(adminGuard, async (req, res) => {
   let id;
   try {
     id = helpers.checkId(req.params.id, "Restaurant ID");
   } catch (e) {
-    return res.status(400).render("error", { errorClass: "error", error: e });
+    return renderRestaurantPage(res, req, req.params.id, 400, e);
   }
 
   const { inspectionDate: rawDate, action, violationCode, violationDescription, criticalFlag, grade } = req.body;
@@ -656,7 +771,7 @@ router.route("/restaurant/:id/admin/inspection").post(adminGuard, async (req, re
   try {
     await restaurants.addInspection(id, inspectionDate, action, violationCode, violationDescription, criticalFlag, grade);
   } catch (e) {
-    return res.status(400).render("error", { errorClass: "error", error: String(e) });
+    return renderRestaurantPage(res, req, id, 400, e);
   }
 
   return res.redirect(`/restaurant/${id}`);
@@ -668,18 +783,17 @@ router.route("/restaurant/:id/admin/inspection/:inspectionId/delete").post(admin
     id = helpers.checkId(req.params.id, "Restaurant ID");
     inspectionId = helpers.checkId(req.params.inspectionId, "Inspection ID");
   } catch (e) {
-    return res.status(400).render("error", { errorClass: "error", error: e });
+    return renderRestaurantPage(res, req, req.params.id, 400, e);
   }
 
   try {
     await restaurants.removeInspection(id, inspectionId);
   } catch (e) {
-    return res.status(400).render("error", { errorClass: "error", error: String(e) });
+    return renderRestaurantPage(res, req, id, 400, e);
   }
 
   return res.redirect(`/restaurant/${id}`);
 });
-
 
 router.route("/review/:reviewId/admin/delete").post(adminGuard, async (req, res) => {
   let reviewId;
@@ -700,7 +814,7 @@ router.route("/review/:reviewId/admin/delete").post(adminGuard, async (req, res)
   try {
     await adminDeleteReviewById(reviewId);
   } catch (e) {
-    return res.status(400).render("error", { errorClass: "error", error: String(e) });
+    return renderRestaurantPage(res, req, restaurantId, 400, e);
   }
 
   return res.redirect(`/restaurant/${restaurantId}`);
@@ -713,21 +827,20 @@ router.route("/restaurant/:id/comment/:commentId/delete").post(loginGuard, async
   try {
     restaurantId = helpers.checkId(req.params.id, "restaurantId");
     userId = helpers.checkId(req.session.user._id, "userId");
-    commentId    = helpers.checkId(req.params.commentId, "commentId");
+    commentId = helpers.checkId(req.params.commentId, "commentId");
   } catch (e) {
-    return res.status(400).render("error", { errorClass: "error", error: e });
+    return renderRestaurantPage(res, req, req.params.id, 400, e);
   }
 
   let comment;
   try {
     comment = await getCommentById(commentId);
   } catch (e) {
-    return res.status(404).render("error", { errorClass: "error", error: e });
+    return renderRestaurantPage(res, req, restaurantId, 404, e);
   }
 
   try {
     let isCommentOwner = false;
-
     if (comment.userID.toString() == userId) {
       isCommentOwner = true;
     }
@@ -735,7 +848,7 @@ router.route("/restaurant/:id/comment/:commentId/delete").post(loginGuard, async
     if (!isAdmin && !isCommentOwner) throw 'User is not admin or comment owner';
 
   } catch (e) {
-    return res.status(403).render("error", { errorClass: "error", error: String(e) });
+    return renderRestaurantPage(res, req, restaurantId, 403, String(e));
   }
 
   try {
@@ -746,7 +859,7 @@ router.route("/restaurant/:id/comment/:commentId/delete").post(loginGuard, async
       await removeCommentById(userId, commentId)
     }
   } catch (e) {
-    return res.status(400).render("error", { errorClass: "error", error: String(e) });
+    return renderRestaurantPage(res, req, restaurantId, 400, String(e));
   }
 
   return res.redirect(`/restaurant/${restaurantId}`);

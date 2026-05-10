@@ -7,65 +7,81 @@ import { getCommentsByUser} from "../data/comments.js";
 import * as reviews from "../data/reviews.js";
 import userData from "../data/users.js";
 
-router.route("/admin").get(loginGuard, async (req, res) => {
-    try {
-        let user = false;
-        let isAdmin = false;
-        let avgRating = 0;
+// helpers
 
-        if (!req.session.user) throw 'No user in session';
-        if (req.session.user) user = true;
-        if (req.session.user.role.toLowerCase() === "admin") isAdmin = true; else throw 'User has no admin privileges';
+async function buildAdminViewData(req) {
+  let adminUser = false;
+  let restaurantsOwned = false;
+  let userOwnedRestaurants = [];
 
-        let restaurantsData = await restaurants.getAllRestaurants();
+  if (!req.session.user) throw 'No user in session';
+  if (req.session.user.role.toLowerCase() === 'admin') adminUser = true;
+  else throw 'User has no admin privileges';
 
-        if (restaurantsData.length == 0) restaurantsData = [];
+  let restaurantsData = await restaurants.getAllRestaurants();
+  if (restaurantsData.length == 0) restaurantsData = [];
 
-        const userOwnedRestaurants = restaurantsData.filter(restaurant =>
-            restaurant.ownerId && restaurant.ownerId.toString() === req.session.user._id.toString()
-        )
-        
-        for (const restaurant of userOwnedRestaurants) {
-            const reviewsData = await reviews.getReviewsByRestaurant(restaurant._id.toString());
+  userOwnedRestaurants = restaurantsData.filter(restaurant =>
+    restaurant.ownerId && restaurant.ownerId.toString() === req.session.user._id.toString()
+  );
 
-            if (reviewsData.length !== 0) {
-                let sum = 0;
-
-                for (const review of reviewsData) {
-                    sum += review.rating;
-                }
-                restaurant.avgRating = (sum / reviewsData.length).toFixed(1);
-            }
-        }
-
-        let restaurantsOwned  = false
-        if (userOwnedRestaurants.length > 0) restaurantsOwned = true;
-
-        return res.render("admin", {
-            title: "Admin Features",
-            adminUser: isAdmin,
-            restaurantsOwned,
-            userOwnedRestaurants: userOwnedRestaurants
-        });
-
+  for (const restaurant of userOwnedRestaurants) {
+    const reviewsData = await reviews.getReviewsByRestaurant(restaurant._id.toString());
+    if (reviewsData.length !== 0) {
+      let sum = 0;
+      for (const review of reviewsData) {
+        sum += review.rating;
+      }
+      restaurant.avgRating = (sum / reviewsData.length).toFixed(1);
     }
-    catch (e) {
-        return res.status(404).render("error", { errorClass: "error", error: e });
-    }
+  }
+
+  if (userOwnedRestaurants.length > 0) restaurantsOwned = true;
+
+  return {
+    title: 'Admin Features',
+    adminUser,
+    restaurantsOwned,
+    userOwnedRestaurants,
+  };
+}
+
+async function renderAdminPage(res, req, status, error) {
+  try {
+    const data = await buildAdminViewData(req);
+    return res.status(status).render('admin', { ...data, error });
+  } catch (_) {
+    return res.status(status).render('admin', {
+      title: 'Admin Features',
+      adminUser: false,
+      restaurantsOwned: false,
+      userOwnedRestaurants: [],
+      error,
+    });
+  }
+}
+
+
+// routes
+
+
+
+router.route('/admin').get(loginGuard, async (req, res) => {
+  try {
+    const data = await buildAdminViewData(req);
+    return res.render('admin', data);
+  } catch (e) {
+    return res.status(404).render('error', { errorClass: 'error', error: e });
+  }
 });
 
 router.route("/admin/restaurant/:id/update").post(loginGuard, async (req, res) => {
     try {
-        let user = false;
-        let isAdmin = false;
-        let updateInfo = req.body;
-
         if (!req.session.user) throw 'No user in session';
-        if (req.session.user) user = true;
-        if (req.session.user.role.toLowerCase() === "admin") isAdmin = true; else throw 'User has no admin privileges';
+        if (req.session.user.role.toLowerCase() !== 'admin') throw 'User has no admin privileges';
 
         let restaurantId = exportedMethods.checkId(req.params.id, 'restaurant ID');
-
+        let updateInfo = req.body;
         let updateObject = {};
 
         if (updateInfo.restaurantName) updateObject.name = exportedMethods.checkString(updateInfo.restaurantName);
@@ -85,18 +101,14 @@ router.route("/admin/restaurant/:id/update").post(loginGuard, async (req, res) =
         let patchedObject = await restaurants.patchRestaurant(restaurantId, updateObject);
         return res.redirect("/admin");
     } catch (e) {
-        return res.status(404).render("error", { errorClass: "error", error: e });
+    return renderAdminPage(res, req, 400, e);
     }
 });
 
 router.route("/admin/restaurant/:id/outdatedReviews").post(loginGuard, async (req, res) => {
     try {
-        let user = false;
-        let isAdmin = false;
-
         if (!req.session.user) throw 'No user in session';
-        if (req.session.user) user = true;
-        if (req.session.user.role.toLowerCase() === "admin") isAdmin = true; else throw 'User has no admin privileges';
+        if (req.session.user.role.toLowerCase() !== 'admin') throw 'User has no admin privileges';
         
         const reviewsData = await reviews.getReviewsByRestaurant(req.params.id);
         const currDate = new Date();
@@ -114,18 +126,14 @@ router.route("/admin/restaurant/:id/outdatedReviews").post(loginGuard, async (re
         return res.redirect('/admin');
     }
      catch (e) {
-        return res.status(404).render("error", { errorClass: "error", error: e });
+        return renderAdminPage(res, req, 400, e);
     }
 });
 
 router.route("/admin/restaurant/:id/delete").post(loginGuard, async (req, res) => {
     try {
-        let user = false;
-        let isAdmin = false;
-
         if (!req.session.user) throw 'No user in session';
-        if (req.session.user) user = true;
-        if (req.session.user.role.toLowerCase() === "admin") isAdmin = true; else throw 'User has no admin privileges';
+        if (req.session.user.role.toLowerCase() !== 'admin') throw 'User has no admin privileges';  
 
         let idCheck = exportedMethods.checkId(req.body.restaurantDeletionId);
 
@@ -139,18 +147,13 @@ router.route("/admin/restaurant/:id/delete").post(loginGuard, async (req, res) =
         else throw 'Restaurant could not be deleted';
         
     } catch (e) {
-        return res.status(404).render("error", { errorClass: "error", error: e });
-    }
+        return renderAdminPage(res, req, 400, e);    }
 });
 
 router.route("/admin/createRestaurant").post(loginGuard, async (req, res) => {
     try {
-        let user = false;
-        let isAdmin = false;
-
         if (!req.session.user) throw 'No user in session';
-        if (req.session.user) user = true;
-        if (req.session.user.role.toLowerCase() === "admin") isAdmin = true; else throw 'User has no admin privileges';
+        if (req.session.user.role.toLowerCase() !== 'admin') throw 'User has no admin privileges';
 
         const restaurantInfo = req.body;
 
@@ -169,7 +172,7 @@ router.route("/admin/createRestaurant").post(loginGuard, async (req, res) => {
         return res.redirect('/admin');
         
     } catch (e) {
-        return res.status(404).render("error", { errorClass: "error", error: e });
+        return renderAdminPage(res, req, 400, e);
     }
 });
 

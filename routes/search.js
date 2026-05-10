@@ -5,6 +5,10 @@ import { loginGuard } from "../middleware.js";
 
 const router = Router();
 
+function renderSearchError(res, view, title, status, error) {
+  return res.status(status).render(view, { title, error });
+}
+
 router.route("/home").get(loginGuard, async (req, res) => {
   return res.render("home", { title: "Restaurant Search" });
 });
@@ -35,10 +39,7 @@ router.route("/searchResults").post(loginGuard, async (req, res) => {
     try {
       boro = helpers.checkBoro(info.boro);
     } catch (e) {
-      return res.status(400).render("error", {
-        errorClass: "error",
-        error: "Invalid Borough Location!",
-      });
+      return renderSearchError(res, "home", "Restaurant Search", 400, "Invalid Borough Location!");
     }
   }
 
@@ -49,10 +50,7 @@ router.route("/searchResults").post(loginGuard, async (req, res) => {
   }
 
   if (name === "" && boro === "" && cuisine === "") {
-    return res.status(400).render("error", {
-      errorClass: "error",
-      error: "You must supply a search term!",
-    });
+    return renderSearchError(res, "home", "Restaurant Search", 400, "You must supply a search term!");
   }
 
   try {
@@ -66,20 +64,20 @@ router.route("/searchResults").post(loginGuard, async (req, res) => {
       restaurantsData: data,
     });
   } catch (e) {
-    return res
-      .status(404)
-      .render("error", { errorClass: "restaurant-not-found", error: e });
+    return renderSearchError(res, "home", "Restaurant Search", 404, e);
   }
 });
+
 router.route("/searchCleanest").get(loginGuard, async (req, res) => {
   try {
     return res.render("searchCleanest", {
       title: "Search Cleanest Restaurants",
     });
   } catch (e) {
-    return res.status(404).render("error", { errorClass: "error", error: e });
+    return renderSearchError(res, "searchCleanest", "Search Cleanest Restaurants", 404, e);
   }
 });
+
 router.route("/restaurantsLeaderboard").post(loginGuard, async (req, res) => {
   let info = req.body;
   let name;
@@ -98,10 +96,7 @@ router.route("/restaurantsLeaderboard").post(loginGuard, async (req, res) => {
     try {
       boro = helpers.checkBoro(info.boro);
     } catch (e) {
-      return res.status(400).render("error", {
-        errorClass: "error",
-        error: "Invalid Borough Location!",
-      });
+      return renderSearchError(res, "searchCleanest", "Search Cleanest Restaurants", 400, "Invalid Borough Location!");
     }
   }
 
@@ -121,9 +116,7 @@ router.route("/restaurantsLeaderboard").post(loginGuard, async (req, res) => {
       restaurantsData: data,
     });
   } catch (e) {
-    return res
-      .status(404)
-      .render("error", { errorClass: "restaurant-not-found", error: e });
+    return renderSearchError(res, "searchCleanest", "Search Cleanest Restaurants", 404, e);
   }
 });
 

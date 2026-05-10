@@ -6,6 +6,111 @@
       commentCount   = $('#comment-count'),
       submitBtn      = $('#postMessageButton');
 
+
+  let restaurantId = String(commentForm.data('restaurant-id') || ''),
+      currentUser   = String(commentForm.data('current-user') || ''),
+      isAdmin       = commentForm.data('is-admin') === true ||
+                      commentForm.data('is-admin') === 'true';
+
+  function esc(str) {
+    return $('<div>').text(String(str)).html();
+  }
+
+  function buildReplyMarkup(reply) {
+    let editBtn = '';
+    if (reply.username === currentUser) {
+      editBtn =
+        '<form action="/restaurant/' + esc(restaurantId) + '/comment/' + esc(reply._id) + '/edit" method="GET" style="margin-top:0.4rem">' +
+          '<button type="submit">Edit Reply</button>' +
+        '</form>';
+    }
+
+    return $(
+      '<li>' +
+        '<span><strong><a href="/profile/' + esc(reply.username) + '">' + esc(reply.username) + '</a></strong></span>' +
+        '<span>' + esc(reply.date) + '</span>' +
+        '<p>' + esc(reply.message) + '</p>' +
+        editBtn +
+      '</li>'
+    );
+  }
+
+  $(document).on('submit', 'form.reply-form', function (event) {
+    event.preventDefault();
+
+    let form = $(this);
+    let localError = form.find('.reply-error');
+    if (!localError.length) {
+      localError = $('<div class="reply-error formError" style="display:none"></div>');
+      form.append(localError);
+    }
+
+    localError.hide().text('');
+    errorDiv.hide().text('');
+
+    let commentId = String(form.data('comment-id') || '');
+    let replyInput = form.find('textarea[name="reply"]');
+    let replyMessage = String(replyInput.val() || '').trim();
+
+    if (!replyMessage) {
+      localError.text("Your reply can't be empty!").show();
+      replyInput.focus();
+      return;
+    }
+
+    let submitButton = form.find('button[type="submit"]').first();
+    let requestConfig = {
+      method: 'POST',
+      url: form.attr('action'),
+      contentType: 'application/x-www-form-urlencoded',
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      data: { reply: replyMessage }
+    };
+
+    submitButton.prop('disabled', true).text('Posting...');
+
+    $.ajax(requestConfig).then(
+      function (responseMessage) {
+        if (!responseMessage.success) {
+          localError.text(responseMessage.error || 'Failed to post reply.').show();
+          return;
+        }
+
+        let commentSection = $('#comment-' + esc(commentId));
+        let repliesDiv = commentSection.find('.replies').first();
+
+        if (!repliesDiv.length) {
+          repliesDiv = $(
+            '<div class="replies">' +
+              '<span><strong>Replies:</strong></span>' +
+              '<ul></ul>' +
+            '</div>'
+          );
+
+          let hr = commentSection.find('hr').first();
+          if (hr.length) {
+            hr.before(repliesDiv);
+          } else {
+            commentSection.append(repliesDiv);
+          }
+        }
+
+        let repliesList = repliesDiv.find('ul').first();
+        repliesList.append(buildReplyMarkup(responseMessage.reply));
+        form.get(0).reset();
+      },
+      function (xhr) {
+        let msg = 'An error occurred while posting your reply.';
+        if (xhr.responseJSON && xhr.responseJSON.error) {
+          msg = xhr.responseJSON.error;
+        }
+        localError.text(msg).show();
+      }
+    ).always(function () {
+      submitButton.prop('disabled', false).text('Post');
+    });
+  });
+
   commentForm.submit(function (event) {
     event.preventDefault();
 
@@ -70,11 +175,12 @@
         }
 
         let replyForm =
-          '<form action="/restaurant/' + esc(restaurantId) + '/comment/' + esc(c._id) + '/reply" method="POST">' +
+          '<form action="/restaurant/' + esc(restaurantId) + '/comment/' + esc(c._id) + '/reply" method="POST" class="reply-form" data-comment-id="' + esc(c._id) + '">' +
             '<label>Reply to this comment' +
               '<textarea name="reply" placeholder="What\'s on your mind?"></textarea>' +
             '</label>' +
             '<button type="submit">Post</button>' +
+            '<div class="reply-error formError" style="display:none"></div>' +
           '</form>';
 
         let deleteBtn = '';
