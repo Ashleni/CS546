@@ -315,9 +315,22 @@
             </form>
 
             {{#if @root.isAdmin}}
-              <form action="/restaurant/{{../restaurant._id}}/comment/{{this._id}}/admin/delete" method="POST" style="margin-top:0.4rem">
+              <form action="/restaurant/{{../restaurant._id}}/comment/{{this._id}}/delete" method="POST" style="margin-top:0.4rem">
                 <button type="submit"> Delete Comment</button>
               </form>
+              
+            {{else}}
+                {{#if (eq this.username @root.user.username)}}
+                  <form action="/restaurant/{{../restaurant._id}}/comment/{{this._id}}/delete" method="POST" style="margin-top:0.4rem">
+                    <button type="submit"> Delete Comment</button>
+                  </form>
+                {{/if}}
+            {{/if}}
+
+            {{#if (eq this.username @root.user.username)}}
+                <form action="/restaurant/{{../restaurant._id}}/comment/{{this._id}}/edit" method="GET" style="margin-top:0.4rem">
+                <button type="submit"> Edit Comment</button>
+                </form>
             {{/if}}
 
             {{#if this.replies.length}}
@@ -329,6 +342,12 @@
                       <span><strong><a href="/profile/{{this.username}}">{{this.username}}</a></strong></span>
                       <span>{{this.date}}</span>
                       <p>{{this.message}}</p>
+
+                      {{#if (eq this.username @root.user.username)}}
+                          <form action="/restaurant/{{@root.restaurant._id}}/comment/{{this._id}}/edit" method="GET" style="margin-top:0.4rem">
+                          <button type="submit"> Edit Reply</button>
+                          </form>
+                      {{/if}}
                     </li>
                   {{/each}}
                   </ul>
