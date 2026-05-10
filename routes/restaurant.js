@@ -414,6 +414,7 @@ router.route("/review/:reviewId").post(loginGuard, upload.array("photos", 3), as
   });
 
 router.route("/restaurant/:id/comment").post(loginGuard,  async (req, res) => {
+  const isAjax = req.headers["x-requested-with"] === "XMLHttpRequest";
   let restaurantId;
   let userId;
   let message;
@@ -423,13 +424,28 @@ router.route("/restaurant/:id/comment").post(loginGuard,  async (req, res) => {
     userId = helpers.checkId(req.session.user._id, "userId");
     message = helpers.checkMessage(req.body.message);
   } catch (e) {
+    if (isAjax) return res.status(400).json({ success: false, error: String(e) });
     return res.status(404).render("error", { errorClass: "error", error: e });
   }
 
+  let comment;
   try {
-    const comment = await createComment(userId, restaurantId, message);
+    comment = await createComment(userId, restaurantId, message);
   } catch (e) {
+    if (isAjax) return res.status(500).json({ success: false, error: String(e) });
     return res.status(404).render("error", { errorClass: "error", error: e });
+  }
+
+  if (isAjax) {
+    return res.status(200).json({
+      success: true,
+      comment: {
+        _id:      comment._id.toString(),
+        username: comment.username,
+        message:  comment.message,
+        date:     comment.date,
+      },
+    });
   }
 
   return res.redirect(`/restaurant/${restaurantId}`);

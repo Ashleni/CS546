@@ -289,10 +289,13 @@
 
 
   <section class="comment-section">
-    <div id="error" class="formError">{{error}}</div>
+    <div id="error" class="formError"{{#unless error}} style="display:none"{{/unless}}>{{error}}</div>
     
-    <h3>Comments ({{commentCount}})</h3>
-    <form action="/restaurant/{{restaurant._id}}/comment" method="POST" name="newComment-form" id="newComment-form">
+    <h3>Comments (<span id="comment-count">{{commentCount}}</span>)</h3>
+    <form action="/restaurant/{{restaurant._id}}/comment" method="POST" name="newComment-form" id="newComment-form"
+          data-restaurant-id="{{restaurant._id}}"
+          data-current-user="{{user.username}}"
+          data-is-admin="{{isAdmin}}">
       <label for="message">
         Post a Comment
         <textarea name="message" id="message" placeholder="What's on your mind?"></textarea>
@@ -300,6 +303,7 @@
       <button type="submit" name="postMessageButton" id="postMessageButton">Post</button> 
     </form>
     <hr>
+    <div id="comment-list">
     {{#if comments.length}}
       {{#each comments}}
       <section class="single-comment">
@@ -357,7 +361,8 @@
             <hr>
       </section>
       {{/each}}
-    {{else}}No comments to see here... Be the first to post!{{/if}}
+    {{else}}<p id="no-comments-msg">No comments to see here... Be the first to post!</p>{{/if}}
+    </div>
   </section>
 
   <script src="../public/js/newComment.js"></script>

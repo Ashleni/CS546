@@ -64,6 +64,8 @@ router.route("/admin/restaurant/:id/update").post(loginGuard, async (req, res) =
         if (req.session.user) user = true;
         if (req.session.user.role.toLowerCase() === "admin") isAdmin = true; else throw 'User has no admin privileges';
 
+        let restaurantId = exportedMethods.checkId(req.params.id, 'restaurant ID');
+
         let updateObject = {};
 
         if (updateInfo.restaurantName) updateObject.name = exportedMethods.checkString(updateInfo.restaurantName);
@@ -80,7 +82,7 @@ router.route("/admin/restaurant/:id/update").post(loginGuard, async (req, res) =
             updateObject.address = addressObj;
 }
 
-        let patchedObject = await restaurants.patchRestaurant(req.params.id, updateObject);
+        let patchedObject = await restaurants.patchRestaurant(restaurantId, updateObject);
         return res.redirect("/admin");
     } catch (e) {
         return res.status(404).render("error", { errorClass: "error", error: e });
