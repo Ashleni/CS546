@@ -51,9 +51,15 @@ router.route("/profile/").get(loginGuard, async (req, res) => {
             for (let r of reviewList) {
                 let restaurant = await restaurants.getRestaurantById(r.restaurantID.toString());
                 let reviewInfo = {
+                    reviewId: r._id.toString(),
+                    restaurantId: r.restaurantID.toString(),
                     restaurant: restaurant.name,
                     rating: r.rating,
-                    date: r.date
+                    reviewText: r.reviewText,
+                    date: r.date,
+                    edited: r.edited,
+                    hasPhotos: r.photos && r.photos.length > 0,
+                    photoCount: r.photos ? r.photos.length : 0,
                 };
                 reviews.push(reviewInfo);
             }

@@ -42,6 +42,65 @@
     {{else}}This restaurant has no inspection history!{{/if}}
   </section>
 
+
+  <!-- The review section, where users can add a review! -->
+  <section class="review-section">
+    <h2>Reviews ({{publicReviews.length}})</h2>
+    <div class="your-review-cta">
+      {{#if userReview}}
+        <p>
+          You rated this restaurant {{userReview.rating}}/5
+          on {{userReview.date}}{{#if userReview.edited}} (edited){{/if}}.
+        </p>
+        <a href="/review/{{userReview._id}}/edit" class="btn-primary btn-sm">Edit Your Review</a>
+      {{else}}
+        <a href="/restaurant/{{restaurant._id}}/review/new" class="btn-primary">Write a Review</a>
+      {{/if}}
+    </div>
+
+    <!-- Show all public reviews -->
+    {{#if publicReviews.length}}
+      {{#each publicReviews}}
+        <article class= "review-card">
+          <header class= "review-card-header">
+            <span class= "reviewer-name"><strong>{{this.username}}</strong></span>
+            <span class= "review-rating">&#9733; {{this.rating}}/5</span>
+            <span class= "review-date">{{this.date}}{{#if this.edited}} (edited){{/if}}</span>
+          </header>
+ 
+          <p class= "review-text">{{this.reviewText}}</p>
+
+          {{#if this.photos.length}} 
+            <div class="review-photos"> 
+              {{#each this.photos}}
+                <img src= "data:{{this.mimetype}};base64,{{this.data}}" alt= "Review photo" class= "review-photo-thumb" >
+              {{/each}} 
+            </div>
+          {{/if}}
+ 
+          <details class= "survey-details">
+            <summary>Hygiene &amp; Experience Survey</summary> 
+            <table class="survey-table">
+              <tbody>
+                {{#each this.surveyRows}} 
+                  <tr>
+                    <td class=  "survey-q">{{this.label}}</td>
+                    <td class= "survey-a">{{this.answer}}</td>
+                  </tr>
+                {{/each}} 
+              </tbody>
+            </table>
+          </details> 
+        </article>
+      {{/each}}
+    {{else}}
+      <p class= "no-content">No reviews yet - be the first to leave one!</p>
+    {{/if}}
+  </section>
+
+
+
+
   <section class="comment-section">
     <div id="error" class="formError">{{error}}</div>
     

@@ -1,0 +1,120 @@
+<main class="review-form-page"> 
+  <a href= "/restaurant/{{restaurant._id}}" class= "back-link">Back to {{restaurant.name}}</a> 
+  <h1> Edit Your Review </h1>
+  <p class="restaurant-subtitle">{{restaurant.name}} - {{restaurant.boro}}</p>
+
+  {{#if error}}
+    <div class="form-error-banner">{{error}}</div>  
+  {{/if}}
+ 
+  <form
+    action= "/review/{{review._id}}"
+    method= "POST"
+    enctype= "multipart/form-data" 
+    class= "full-review-form"
+  >
+
+    <section class= "form-section">
+      <h2>Overall Rating</h2>
+      <div class= "star-row">    
+        <label for= "rating">Your rating (0 – 5):</label> 
+        <input
+          type= "number" 
+          name= "rating"
+          id= "rating" 
+          min= "0"
+          max= "5"
+          step= "0.1"
+          value= "{{review.rating}}"
+          required
+        >
+      </div>  
+    </section>  
+
+    <section class="form-section">
+      <h2>Your Review</h2>
+      <label for="reviewText">Tell others about your experience:</label>
+      <textarea
+        name= "reviewText"
+        id= "reviewText"
+        rows= "5" 
+        placeholder= "What did you think of the food, service, and atmosphere?"
+        required
+      >{{review.reviewText}}</textarea>
+    </section> 
+ 
+    <section class= "form-section">
+      <h2>Photos  
+        <span class= "optional-label">(optional, up to 3)</span>
+        </h2> 
+
+      {{#if review.photos.length}}
+        <p class= "field-hint">Current photos (uploading new ones will replace these):</p>
+        <div class= "photo-preview-row">
+          {{#each review.photos}}
+            <img
+              src= "data:{{this.mimetype}};base64,{{this.data}}"
+              alt= "Review photos"
+              class= "review-photo-thumb"
+            >
+          {{/each}}
+        </div>
+      {{/if}}
+
+      <label for= "photos">Upload new images (replaces existing):</label>
+      <input type= "file" name= "photos" id= "photos" accept="image/*" multiple>
+      <p class= "field-hint">Max 3 images | 5 MB each | JPEG / PNG / WEBP</p>
+    </section>
+
+    <section class= "form-section survey-section">
+      <h2>Hygiene and Experience Survey</h2>
+      <p class= "survey-intro">
+        Update your answers below. Your responses are public on the restaurant's profile.
+      </p>
+
+      {{#each surveyQuestions}}
+        <div class= "survey-question">
+          <p class= "question-label">{{this.label}}</p>
+
+          {{#if this.isScale}}
+            <div class="scale-options">
+              {{#each this.options}}
+                <label class="scale-label">
+                  <input
+                    type="radio"
+                    name="{{../key}}"
+                    value="{{this.value}}"
+                    required
+                  >
+                  <span>{{this.label}}</span>
+                </label>
+              {{/each}}
+            </div>
+            <p class= "scale-hint">1 = Very poor | 5 = Excellent</p>
+
+          {{else}}
+            <div class= "choice-options">
+              {{#each this.options}}
+                <label class= "choice-label">
+                  <input
+                    type= "radio"
+                    name= "{{../key}}"
+                    value= "{{this.value}}"
+                    required
+                  >
+                  {{this.label}}
+                </label>
+              {{/each}}
+            </div>
+          {{/if}}
+        </div>
+      {{/each}}
+    </section>
+
+    <div  class= "form-actions">
+      <button type= "submit" class="btn-primary">Save Changes</button>
+      <a href= "/restaurant/{{restaurant._id}}" class="btn-secondary">Cancel</a>
+    </div>
+ 
+  </form>  
+</main>
