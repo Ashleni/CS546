@@ -457,6 +457,6 @@ export const voteOnReview = async (reviewId, votingUserId, voteType) => {
       return { deleted: true, reason: "Too many downvotes." };
   }
 
-  return { deleted: false, upvotes: updatedReview.upvotes.length, downvotes: updatedReview.downvotes.length };
+  return { deleted: false, upvotes: (updatedReview.upvotes || []).length, downvotes: (updatedReview.downvotes || []).length };
 };
 
