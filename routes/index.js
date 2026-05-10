@@ -3,6 +3,7 @@ import profileRoutes from "./profile.js";
 import authRoutes from "./auth.js";
 import restaurantRoutes from "./restaurant.js";
 import inboxRoutes from "./inbox.js";
+import adminRoutes from "./admin.js";
 
 const constructorMethod = (app) => {
   app.use("/", searchRoutes);
@@ -10,6 +11,7 @@ const constructorMethod = (app) => {
   app.use("/", authRoutes);
   app.use("/", restaurantRoutes);
   app.use("/", inboxRoutes);
+  app.use("/", adminRoutes);
   app.use(/(.*)/, (req, res) => {
     res
       .status(404)

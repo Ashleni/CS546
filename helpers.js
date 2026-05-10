@@ -186,6 +186,17 @@ const exportedMethods = {
     return zip;
   },
 
+  checkBuilding(building) {
+    if (typeof building !== "string")
+      throw "Error: building must be type string!";
+
+    building = building.trim();
+    if (building.length < 1 || building.length > 10)
+      throw "Error: building has invalid length!";
+
+    return building;
+  },
+
   checkPhoneNumber(phone) {
     if (typeof phone !== "string") throw "Error: phone must be type string!";
 
@@ -198,6 +209,21 @@ const exportedMethods = {
       if (!validNums.includes(phone[i]))
         throw "Error: phone must only contain numbers!";
     }
+
+    return phone;
+  },
+
+  checkCuisine(cuisine) {
+    if (typeof cuisine !== "string")
+      throw "Error: cuisine must be type string!";
+
+    cuisine = cuisine.trim().toLowerCase();
+
+    if (cuisine.length < 3 || cuisine.length > 15) {
+      throw "Error: cuisine has invalid length!";
+    }
+
+    return cuisine;
   },
 
   checkDate(date, variableName) {

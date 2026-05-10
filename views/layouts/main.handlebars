@@ -17,7 +17,9 @@
             <span>Hi, {{user.firstName}}!</span>
             <a href="/signout">Sign Out</a>
             <a href="/profile">Profile</a>
-
+                {{#if adminUser}}<a href="/admin">Admin Features</a>
+                {{else}}{{/if}}
+                    
         {{else}}
             <a href="/signin">Sign In</a>
             <a href="/register">Register Now</a>

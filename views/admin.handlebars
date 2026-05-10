@@ -1,0 +1,163 @@
+<main>
+    {{#if adminUser}}
+        <h1>Admin Features</h1>
+        <h2>Create</h2>              
+            {{!-- Create --}}
+            <div id="createRestaurantDiv" class="form-container">
+                <form action="/admin/createRestaurant" method="POST" name="createRestaurant-form" id="createRestaurant-form">
+                <label for="newRestaurantName">
+                    Restaurant Name
+                    <input type="text" name="name" id="newRestaurantName">
+                </label>
+                <label for="newboro">
+                    Borough
+                    <select name="boro" id="newboro">
+                        <option value="select">Select</option>
+                        <option value="Bronx">Bronx</option>
+                        <option value="Brooklyn">Brooklyn</option>
+                        <option value="Manhattan">Manhattan</option>
+                        <option value="Queens">Queens</option>
+                        <option value="Staten Island">Staten Island</option>
+                    </select>
+                </label>
+                <label for="newBuilding">
+                    Building
+                    <input type="text" name="building" id="newBuilding">
+                </label>
+                <label for="newStreet">
+                    Street
+                    <input type="text" name="street" id="newStreet">
+                </label>
+                <label for="newZip">
+                    Zipcode
+                    <input type="text" name="zip" id="newZip">
+                </label>
+                <label for="newPhone">
+                    Phone Number (Numbers Only)
+                    <input type="text" name="phone" id="newPhone">
+                </label>
+                <label for="newCuisine">
+                    Cuisine
+                    <input type="text" name="cuisine" id="newCuisine">
+                </label>
+                <button type="submit" name="updateRestaurantButton" id="updateRestaurantButton">Create Restaurant</button> 
+                </form>
+            </div>
+
+        <h2>Configure Restaurants</h2>
+        {{#if restaurantsOwned}}
+            <ol>
+                {{#each userOwnedRestaurants}}
+                <li>
+                    <h3>{{this.name}}</h3>
+                    <span>Average Rating: {{#if this.avgRating}}{{this.avgRating}}/5{{else}}This restaurant has not been rated yet!{{/if}}</span><br>
+                    <span>Cuisine: {{#if this.cuisine}}{{this.cuisine}}{{else}}N/A{{/if}}</span><br>
+                    <span>Borough: {{#if this.boro}}{{this.boro}}{{else}}N/A{{/if}}</span><br>
+
+                    <button onclick="showForm('updateRestaurantDiv-{{this._id}}')">Update Restaurant Details</button>
+                    
+                    <button onclick="showForm('deleteOutdatedRestaurantReviewsDiv-{{this._id}}')">View Outdated Reviews</button>
+                    
+                    <button onclick="showForm('deleteRestaurantDiv-{{this._id}}')">Delete Restaurant</button>
+
+                    <br>
+
+                    {{!-- Update --}}
+                    <div id="updateRestaurantDiv-{{this._id}}" class="form-container">
+                        <h4>Edit Restaurant</h4>
+                        <form action="/admin/restaurant/{{this._id}}/update" method="POST" name="updateRestaurant-form-{{this._id}}" id="updateRestaurant-form-{{this._id}}">
+                        <label for="restaurantName-{{this._id}}">
+                            Restaurant Name
+                            <input type="text" name="restaurantName" id="restaurantName-{{this._id}}" value="{{this.name}}">
+                        </label>
+                        <br>
+                        <label for="boro-{{this._id}}">
+                            Borough
+                            <select name="boro" id="boro-{{this._id}}">
+                                <option value="Bronx" {{#if (eq this.boro "bronx")}}selected{{/if}}>Bronx</option>
+                                <option value="Brooklyn" {{#if (eq this.boro "brooklyn")}}selected{{/if}}>Brooklyn</option>
+                                <option value="Manhattan" {{#if (eq this.boro "manhattan")}}selected{{/if}}>Manhattan</option>
+                                <option value="Queens" {{#if (eq this.boro "queens")}}selected{{/if}}>Queens</option>
+                                <option value="Staten Island" {{#if (eq this.boro "staten island")}}selected{{/if}}>Staten Island</option>
+                            </select>
+                        </label>
+                        <br>
+                        <label for="building-{{this._id}}">
+                            Building
+                            <input type="text" name="building" id="building-{{this._id}}" value="{{this.address.building}}">
+                        </label>
+                        <br>
+                        <label for="street-{{this._id}}">
+                            Street
+                            <input type="text" name="street" id="street-{{this._id}}" value="{{this.address.street}}">
+                        </label>
+                        <br>
+                        <label for="zip-{{this._id}}">
+                            Zipcode
+                            <input type="text" name="zip" id="zip-{{this._id}}" value="{{this.address.zip}}">
+                        </label>
+                        <br>
+                        <label for="phone-{{this._id}}">
+                            Phone Number (Numbers Only)
+                            <input type="text" name="phone" id="phone-{{this._id}}" value="{{this.phone}}">
+                        </label>
+                        <br>
+                        <label for="cuisine-{{this._id}}">
+                            Cuisine
+                            <input type="text" name="cuisine" id="cuisine-{{this._id}}" value="{{this.cuisine}}">
+                        </label>
+                        <br>
+                        <button type="submit" name="updateRestaurantButton" id="updateRestaurantButton-{{this._id}}">Update Restaurant</button> 
+                        </form>
+                    </div>
+                    
+                    {{!-- Delete Outdated Reviews --}}
+                    <div id="deleteOutdatedRestaurantReviewsDiv-{{this._id}}" class="form-container">
+                        <h4>Outdated Reviews of 3+ Years</h4>
+                        <form action="/admin/restaurant/{{this._id}}/outdatedReviews" method="POST" name="deleteRestaurant-form-{{this._id}}" id="deleteRestaurant-form-{{this._id}}">
+                            {{#if this.outdatedReviews.length}}
+                                {{#each this.outdatedReviews}}
+                                <section class="single-outdated-review">
+                                    <span><strong>{{this.date}}</strong></span>
+                                    <span>{{this.rating}}</span>
+                                    <hr>
+                                </section>
+                                {{/each}}
+                                <button type="submit" name="deleteOutdatedReviewsButton" id="deleteOutdatedReviewsButton-{{../_id}}">Delete All Outdated Reviews</button> 
+                            {{else}}No outdated reviews!{{/if}}
+                        </form>
+                    </div>
+
+                    {{!-- Delete Restaurant --}}
+                    <div id="deleteRestaurantDiv-{{this._id}}" class="form-container">
+                        <form action="/admin/restaurant/{{this._id}}/delete" method="POST" name="delete-form-{{this._id}}" id="delete-form-{{this._id}}">
+                            <label for="restaurantDeletionId-{{this._id}}">
+                                <h4>Delete Restaurant</h4>
+                                <input type="text" name="restaurantDeletionId" id="restaurantDeletionId-{{this._id}}" placeholder="{{this._id}}" required>
+                            </label>
+                            <button type="submit" name="deleteRestaurantButton" id="deleteRestaurantButton-{{this._id}}">Confirm deletion with restaurant id</button> 
+                        </form>
+                    </div>
+                </li>
+            {{/each}}
+            </ol>
+                
+        {{else}} No owned restaurants found...
+        {{/if}}
+    {{else}}{{/if}}
+
+    {{!-- Source: Dev.to - Show/Hide a Form on button click using JavaScript --}}
+    <script>
+        function showForm(formId) {
+            let forms = document.querySelectorAll('.form-container');
+            forms.forEach(function(form) {
+                form.style.display = 'none';
+            });
+
+            let selectedForm = document.getElementById(formId);
+            if (selectedForm) {
+                selectedForm.style.display = 'block';
+            }
+        }
+    </script>
+</main>

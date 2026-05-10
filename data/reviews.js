@@ -92,7 +92,7 @@ export const getReviewsByRestaurant = async (restaurantId) => {
     const reviewIdResult = await reviewCollection.find({restaurantID: new ObjectId(restaurantId)}).toArray();
 
     if (reviewIdResult.length === 0) {
-        throw 'Reviews with that restaurant id do not exist';
+        return [];
     }
 
     return reviewIdResult;
