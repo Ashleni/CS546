@@ -4,6 +4,18 @@
   <header>
     <h1>{{restaurant.name}}</h1>
 
+    {{#if isClosed}}
+      <div class="closed-banner">
+        <strong>⚠️ This restaurant has been marked as temporarily closed by the community.</strong>
+        <form action="/restaurant/{{restaurant._id}}/vote-open" method="POST" style="display:inline;">
+          <button type="submit">This restaurant is open again ({{reopenVoteCount}}/10 votes)</button>
+        </form>
+      </div>
+    {{else}}
+      <form action="/restaurant/{{restaurant._id}}/vote-closed" method="POST">
+        <button type="submit">Report as Temporarily Closed ({{closedVoteCount}}/5 votes)</button>
+      </form>
+    {{/if}}
 
     <!--  Follow button logic -->
     {{#if userIsFollowing}}
@@ -128,9 +140,7 @@
             </table>
           </details> 
 
-          {{
-          #unless 
-            this.isOwnReview}}
+          {{#unless this.isOwnReview}}
           <div class="review-votes">
             <form action="/review/{{this._id}}/upvote" method="POST" style="display:inline;">
               <button type="submit">▲ {{this.upvoteCount}}</button>
@@ -139,18 +149,13 @@
               <button type="submit">▼ {{this.downvoteCount}}</button>
             </form>
           </div>
-          {{
-          /unless
-          }}
+          {{/unless}}
         </article>
       {{/each}}
     {{else}}
       <p class= "no-content">No reviews yet - be the first to leave one!</p>
     {{/if}}
   </section>
-
-
-
 
   <section class="comment-section">
     <div id="error" class="formError">{{error}}</div>

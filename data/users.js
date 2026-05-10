@@ -228,12 +228,6 @@ export const getTopContributors = async (limit = 10) => {
   }));
 };
 
-const userCollection = await (await import("../config/mongoCollections.js")).users();
-await userCollection.updateOne(
-    { _id: new ObjectId(userId) },
-    { $push: { reviewsCompleted: newId } }
-);
-
 // FOR FOLLOW FEATURE
 
 // follow restaurant priv or public
