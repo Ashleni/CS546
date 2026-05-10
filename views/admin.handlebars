@@ -113,7 +113,7 @@
                     
                     {{!-- Delete Outdated Reviews --}}
                     <div id="deleteOutdatedRestaurantReviewsDiv-{{this._id}}" class="form-container">
-                        <h4>Outdated Reviews of 3+ Years</h4>
+                        <h4>Outdated Reviews of  Years</h4>
                         <form action="/admin/restaurant/{{this._id}}/outdatedReviews" method="POST" name="deleteRestaurant-form-{{this._id}}" id="deleteRestaurant-form-{{this._id}}">
                             {{#if this.outdatedReviews.length}}
                                 {{#each this.outdatedReviews}}

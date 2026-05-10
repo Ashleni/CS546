@@ -318,6 +318,13 @@ const exportedMethods = {
 
     return s;
   },
+
+  isDateFuture(inputDate) {
+    inputDate = new Date(inputDate);
+    let today = new Date().setHours(0, 0, 0, 0);
+
+    return (inputDate > today);
+  }
 };
 
 export default exportedMethods;

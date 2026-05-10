@@ -189,6 +189,12 @@ export const createReview = async (
 
     let date = helpers.currDate();
    
+    let currGrade = null;
+    let inspections = restaurantObject.inspections;
+    if (inspections.length > 0) {
+      currGrade = inspections[inspections.length - 1].grade;
+    }
+
     let newReview = {
         userID:new ObjectId(userId),
         username:userObject.username,
@@ -196,9 +202,11 @@ export const createReview = async (
         rating,
         reviewText,
         survey,
-        photos:serialisedPhotos,
-        date:helpers.currDate(),
-        edited:false,
+        photos: serialisedPhotos,
+        date,
+        edited: false,
+        flagged: false,
+        currRestaurantGrade: currGrade
     };
 
     const reviewCollection = await reviews();
@@ -413,4 +421,61 @@ export const adminDeleteReviewById = async (reviewId) => {
     deleted: true,
     restaurantID: deletionInfo.restaurantID.toString(),
   };
+};
+
+export const flagOutdatedReviews = async (restaurantId) => {
+  restaurantId = helpers.checkId(restaurantId);
+
+  const restaurant = await getRestaurantById(restaurantId);
+  
+  // date of improved grade
+  let gradeChangeDate = null;
+  let grades = {A: 1, B: 2, C: 3};
+
+  if (restaurant.inspections.length > 1) {
+    const inspections = restaurant.inspections.sort ((a, b) => {
+      a = new Date(a.inspectionDate);
+      b = new Date(b.inspectionDate);
+
+      if (b > a) return 1;
+      if (b < a) return -1;
+      return 0;
+    });
+    
+    let currGrade = inspections[0].grade;
+    let prevGrade = inspections[1].grade;
+  
+    // the value is equivalent to rank, A for 1st rank
+    // save the date grade improved
+    if (grades[currGrade] < grades[prevGrade]) {
+      gradeChangeDate = new Date(inspections[0].inspectionDate);
+    }    
+  }
+
+  // flag reviews with date before gradeChangeDate
+  const currDate = new Date();
+  
+  const reviewCollection = await reviews();
+  
+  const reviewData = await reviewCollection.find({ restaurantID: new ObjectId(restaurantId) }).toArray();
+
+  // check reviews to flag according to conditions
+  for (const review of reviewData) {
+    const reviewDate = new Date(review.date);
+    let dateDifference = (currDate - reviewDate) / 86400000;
+    let reviewFlag = false;
+
+    // condition 1: Flag when review is old (2+ years)
+    if (dateDifference > 730) reviewFlag = true;
+
+    // condition 2: Flag when review was posted before a grade change
+    if (gradeChangeDate && reviewDate < gradeChangeDate) reviewFlag = true;
+
+    if (reviewFlag && !review.flagged) {
+      await reviewCollection.updateOne({
+        _id: review._id},
+        { $set: {flagged: true}
+      });
+    }
+  }
 };

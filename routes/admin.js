@@ -100,11 +100,11 @@ router.route("/admin/restaurant/:id/outdatedReviews").post(loginGuard, async (re
         const currDate = new Date();
 
         for (const review of reviewsData) {
-            // Reviews that are of 3+ years are 'outdated'
+            // Reviews that are of 2+ years are 'outdated'
             let reviewDate = new Date(review.date);
             let dateDifference = (currDate - reviewDate) / 86400000;
 
-            if (dateDifference > 1095) {
+            if (dateDifference > 730) {
                 await reviews.removeReviewById(review.userID.toString(), review._id.toString());
             }
         }

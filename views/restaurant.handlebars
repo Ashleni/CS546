@@ -246,11 +246,12 @@
         <article >
           <header >
             <span ><strong><a href="/profile/{{this.username}}">{{this.username}}</a></strong></span>
-            <span class= "review-rating">&#9733; {{this.rating}}/5</span>
+            <span class= "review-rating">&#9733; {{this.rating}}/5 | </span>
             <span class= "review-date">{{this.date}}{{#if this.edited}} (edited){{/if}}</span>
           </header>
  
-          <p class= "review-text">{{this.reviewText}}</p>
+          <p class= "review-text">{{this.reviewText}}</p><br>
+          <span class= "review-flag"><strong>{{#if this.flagged}}Flagged: Outdated{{/if}}</strong></span>
 
           {{#if this.photos.length}} 
             <div class="review-photos"> 

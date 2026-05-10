@@ -5,7 +5,8 @@ import { loginGuard, adminGuard } from "../middleware.js";
 import helpers from "../helpers.js";
 import { getCommentsByRestaurant, createComment, patchCommentById, addReplyByCommentId, deleteCommentById, getCommentById, removeCommentById } from "../data/comments.js";
 import {getReviewsByRestaurant, createReview, patchReviewById,
-  getReviewById, SURVEY_QUESTIONS, validateSurvey,adminDeleteReviewById} from "../data/reviews.js";
+  getReviewById, SURVEY_QUESTIONS, validateSurvey,adminDeleteReviewById,
+  flagOutdatedReviews} from "../data/reviews.js";
 import userData from "../data/users.js";
 import multer from "multer";
 import {followRestaurant, unfollowRestaurant, updateFollowVisibility} from "../data/users.js";
@@ -33,6 +34,8 @@ let upload = multer({
 
 async function getRestaurantPageData(restaurantId, currentUserId) {
   let data =  await restaurants.getRestaurantById(restaurantId);
+
+  await flagOutdatedReviews(restaurantId);
 
   data.inspections.sort(
     (a, b) => new Date(b.inspectionDate) - new Date(a.inspectionDate)
@@ -69,6 +72,7 @@ async function getRestaurantPageData(restaurantId, currentUserId) {
     photos: r.photos || [],
     date: r.date,
     edited: r.edited,
+    flagged: r.flagged,
     surveyRows: SURVEY_QUESTIONS.map((q) => ({
       label:  q.label,
       answer: r.survey ? formatSurveyAnswer(q, r.survey[q.key]) : "—",
@@ -78,6 +82,8 @@ async function getRestaurantPageData(restaurantId, currentUserId) {
   let commentData = [];
   try {
     commentData = await getCommentsByRestaurant(restaurantId);
+    
+    // BUG HERE
     commentData.sort((a, b) => new Date(b.date) - new Date(a.date));
   } catch (_) {}
   return {
@@ -637,6 +643,10 @@ router.route("/restaurant/:id/admin/inspection").post(adminGuard, async (req, re
     inspectionDate = rawDate;
   }
 
+  if (helpers.isDateFuture(inspectionDate)) {
+    return res.status(400).render("error", { errorClass: "error", error: 'Future inspection dates are not allowed' });
+  }
+  
   try {
     await restaurants.addInspection(id, inspectionDate, action, violationCode, violationDescription, criticalFlag, grade);
   } catch (e) {
