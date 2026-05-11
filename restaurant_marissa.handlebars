@@ -1,0 +1,393 @@
+<main>
+  <a href="/home">Back to Search</a>
+
+{{#if isAdmin}}
+
+  <section>
+    <h2>Admin Panel</h2>
+
+    <details>
+      <summary>Edit Restaurant Info</summary>
+
+      <form action="/restaurant/{{restaurant._id}}/admin/edit" method="POST">
+
+        <label>
+          Name
+          <input type="text" name="name" value="{{restaurant.name}}" maxlength="35">
+        </label>
+
+        <label>
+          Cuisine
+          <input type="text" name="cuisine" value="{{restaurant.cuisine}}" maxlength="15">
+        </label>
+
+        <label>
+          Borough
+            <select name="boro">
+              {{#each adminBoroOptions}}
+                <option value="{{this.value}}" {{#if this.selected}}selected{{/if}}>{{this.label}}</option>
+              {{/each}}
+            </select>
+        </label>
+
+        <label>
+          Phone
+          <input type="text" name="phone" value="{{restaurant.phone}}" maxlength="10">
+        </label>
+
+        <label>
+          Building
+          <input type="text" name="building" value="{{restaurant.address.building}}" maxlength="10">
+        </label>
+
+        <label>
+          Street
+          <input type="text" name="street" value="{{restaurant.address.street}}" maxlength="45">
+        </label>
+
+        <label>
+          Zip Code
+          <input type="text" name="zip" value="{{restaurant.address.zip}}" maxlength="5">
+        </label>
+
+        <button type="submit">Save Changes</button>
+      </form>
+    </details>
+
+    <details>
+      <summary>Manage Inspection History</summary>
+
+      <h4>Current Inspections</h4>
+
+      {{#if restaurant.inspections.length}}
+
+        <ul>
+          {{#each restaurant.inspections}}
+            <li>
+              <strong>{{this.inspectionDate}}</strong>
+              — Grade: {{this.grade}}
+              — {{this.action}}
+
+              {{#if this.violationCode}}
+                | Violation: {{this.violationCode}}
+              {{/if}}
+
+              <form action="/restaurant/{{../restaurant._id}}/admin/inspection/{{this._id}}/delete" method="POST">
+                <button type="submit">
+                  Remove
+                </button>
+              </form>
+            </li>
+          {{/each}}
+        </ul>
+
+      {{else}}
+
+        <p>No inspection records on file.</p>
+
+      {{/if}}
+
+      <h4>Add New Inspection</h4>
+
+      <form action="/restaurant/{{restaurant._id}}/admin/inspection" method="POST">
+
+        <label>
+          Inspection Date
+          <input type="date" name="inspectionDate" required>
+        </label>
+
+        <label>
+          Grade
+          <select name="grade" required>
+            <option value="">Select</option>
+            <option value="A">A</option>
+            <option value="B">B</option>
+            <option value="C">C</option>
+          </select>
+        </label>
+
+        <label>
+          Action
+          <select name="action" required>
+            <option value="">Select</option>
+            <option value="No violations were recorded at the time of this inspection.">
+              No violations recorded
+            </option>
+            <option value="Violations were cited in the following area(s).">
+              Violations cited
+            </option>
+          </select>
+        </label>
+
+        <label>
+          Critical Flag
+          <select name="criticalFlag" required>
+            <option value="">Select</option>
+            <option value="Not Critical">Not Critical</option>
+            <option value="Critical">Critical</option>
+          </select>
+        </label>
+
+        <label>
+          Violation Code
+          <input type="text" name="violationCode" maxlength="10">
+        </label>
+
+        <label>
+          Violation Description
+          <input type="text" name="violationDescription" maxlength="100">
+        </label>
+
+        <button type="submit">Add Inspection</button>
+      </form>
+
+    </details>
+
+  </section>
+
+{{/if}}
+
+  <header>
+    <h1>{{restaurant.name}}</h1>
+
+    {{#if isClosed}}
+      <div class="closed-banner">
+        <strong>⚠️ This restaurant has been marked as temporarily closed by the community.</strong>
+        <form action="/restaurant/{{restaurant._id}}/vote-open" method="POST" style="display:inline;">
+          <button type="submit">This restaurant is open again ({{reopenVoteCount}}/10 votes)</button>
+        </form>
+      </div>
+    {{else}}
+      <form action="/restaurant/{{restaurant._id}}/vote-closed" method="POST">
+        <button type="submit">Report as Temporarily Closed ({{closedVoteCount}}/5 votes)</button>
+      </form>
+    {{/if}}
+
+    <!--  Follow button logic -->
+    {{#if userIsFollowing}}
+        <p>
+          Following  {{followVisibility}}
+        </p>
+
+        <form action="/restaurant/{{restaurant._id}}/follow/visibility" method="POST"> 
+ 
+          <label> 
+            Change visibility:
+            <select name="visibility"> 
+              <option value="public">Public</option>
+              <option value="private">Private</option>
+            </select> 
+          </label>
+          <button type="submit">Update</button>
+        </form>
+
+        <form action="/restaurant/{{restaurant._id}}/unfollow" method="POST" >
+          <button type="submit" >Unfollow</button> 
+        </form>
+ 
+    {{else}}
+      <form action="/restaurant/{{restaurant._id}}/follow" method="POST" > 
+        <label >
+          Follow as: 
+          <select name="visibility">
+            <option value="public">Public</option> 
+            <option value="private">Private</option>
+          </select>  
+        </label>
+        <button type="submit" >Follow Restaurant</button>
+      </form>
+    {{/if}}
+
+
+    <p><strong>Average Rating:</strong> {{#if avgRating}}{{avgRating}}/5{{else}}This restaurant has not been rated yet!{{/if}}</p>
+    <span>Cuisine: {{#if restaurant.cuisine}}{{restaurant.cuisine}}{{else}}N/A{{/if}}</span>
+    <span>Borough: {{#if restaurant.boro}}{{restaurant.boro}}{{else}}N/A{{/if}}</span>
+  </header>
+
+  <p>
+    Address: {{restaurant.address.building}} {{restaurant.address.street}}, {{restaurant.address.zip}}
+  </p>
+  <p>
+    Phone: {{#if restaurant.phone}}<a href="tel:{{restaurant.phone}}">{{restaurant.phone}}</a>{{else}}N/A{{/if}}
+  </p>
+
+  <section class="inspection-history">
+    <h3>Inspection History</h3>
+    {{#if restaurant.inspections.length}}
+    <ul>
+      {{#each restaurant.inspections}}
+        <li>
+          <p><strong>Date:</strong> {{this.inspectionDate}}</p>
+          <p><strong>Grade:</strong> {{this.grade}}</p>
+          <p><strong>Action:</strong> {{this.action}}</p>
+
+          {{#if this.violationCode}}
+            <p><strong>Violation:</strong> {{this.violationCode}} - {{this.violationDescription}}</p>
+          {{else}}
+          {{/if}}
+          
+          {{#if this.criticalFlag}}
+          <p><strong>Critical Flag:</strong> {{this.criticalFlag}}</p>
+          {{else}}{{/if}}
+
+        </li>
+      {{/each}}
+    </ul>
+    {{else}}This restaurant has no inspection history!{{/if}}
+  </section>
+
+
+  <!-- The review section, where users can add a review! -->
+  <section class="review-section">
+    <h2>Reviews ({{publicReviews.length}})</h2>
+    <div class="your-review-cta">
+      {{#if userReview}}
+        <p>
+          You rated this restaurant {{userReview.rating}}/5
+          on {{userReview.date}}{{#if userReview.edited}} (edited){{/if}}.
+        </p>
+        <a href="/review/{{userReview._id}}/edit" class="btn-primary btn-sm">Edit Your Review</a>
+      {{else}}
+        <a href="/restaurant/{{restaurant._id}}/review/new" class="btn-primary">Write a Review</a>
+      {{/if}}
+    </div>
+
+    <!-- Show all public reviews -->
+    {{#if publicReviews.length}}
+      {{#each publicReviews}}
+        <article >
+          <header >
+            <span ><strong><a href="/profile/{{this.username}}">{{this.username}}</a></strong></span>
+            <span class= "review-rating">&#9733; {{this.rating}}/5 | </span>
+            <span class= "review-date">{{this.date}}{{#if this.edited}} (edited){{/if}}</span>
+          </header>
+ 
+          <p class= "review-text">{{this.reviewText}}</p><br>
+          <span class= "review-flag"><strong>{{#if this.flagged}}Flagged: Outdated{{/if}}</strong></span>
+
+          {{#if this.photos.length}} 
+            <div class="review-photos"> 
+              {{#each this.photos}}
+                <img src= "data:{{this.mimetype}};base64,{{this.data}}" alt= "Review photo" class= "review-photo-thumb" >
+              {{/each}} 
+            </div>
+          {{/if}}
+ 
+          <details class= "survey-details">
+            <summary>Hygiene &amp; Experience Survey</summary> 
+            <table class="survey-table">
+              <tbody>
+                {{#each this.surveyRows}} 
+                  <tr>
+                    <td class=  "survey-q">{{this.label}}</td>
+                    <td class= "survey-a">{{this.answer}}</td>
+                  </tr>
+                {{/each}} 
+              </tbody>
+            </table>
+          </details> 
+          {{#if @root.isAdmin}}
+            <form action="/review/{{this._id}}/admin/delete" method="POST" style="margin-top:0.5rem">
+              <button type="submit">Delete Review</button>
+            </form>
+          {{/if}}
+
+          {{#unless this.isOwnReview}}
+          <div class="review-votes">
+            <form action="/review/{{this._id}}/upvote" method="POST" style="display:inline;">
+              <button type="submit">▲ {{this.upvoteCount}}</button>
+            </form>
+            <form action="/review/{{this._id}}/downvote" method="POST" style="display:inline;">
+              <button type="submit">▼ {{this.downvoteCount}}</button>
+            </form>
+          </div>
+          {{/unless}}
+        </article>
+      {{/each}}
+    {{else}}
+      <p class= "no-content">No reviews yet - be the first to leave one!</p>
+    {{/if}}
+  </section>
+
+  <section class="comment-section">
+
+      <div id="error" class="formError"{{#unless error}} style="display:none"{{/unless}}>{{error}}</div>
+
+    <h3>Comments (<span id="comment-count">{{commentCount}}</span>)</h3>
+    <form action="/restaurant/{{restaurant._id}}/comment" method="POST" name="newComment-form" id="newComment-form"
+          data-restaurant-id="{{restaurant._id}}"
+          data-current-user="{{user.username}}"
+          data-is-admin="{{isAdmin}}">
+      <label for="message">
+        Post a Comment
+        <textarea name="message" id="message" placeholder="What's on your mind?"></textarea>
+      </label>
+      <button type="submit" name="postMessageButton" id="postMessageButton">Post</button> 
+    </form>
+    <hr>
+    <div id="comment-list">
+    {{#if comments.length}}
+      {{#each comments}}
+      <section class="single-comment" id="comment-{{this._id}}">
+        <span><strong><a href="/profile/{{this.username}}">{{this.username}}</a></strong></span>
+        <span>{{this.date}}</span>
+        <p>{{this.message}}</p>
+            <form action="/restaurant/{{../restaurant._id}}/comment/{{this._id}}/reply" method="POST" class="reply-form" data-comment-id="{{this._id}}" name="newReply-form-{{this._id}}" id="newReply-form-{{this._id}}">
+              <label for="reply-{{this._id}}">
+                Reply to this comment
+                <textarea name="reply" id="reply-{{this._id}}" placeholder="What's on your mind?"></textarea>
+              </label>
+              <button type="submit" name="postReplyButton-{{this._id}}" id="postReplyButton-{{this._id}}">Post</button>
+              <div class="reply-error formError" style="display:none"></div>
+            </form>
+
+            {{#if @root.isAdmin}}
+              <form action="/restaurant/{{../restaurant._id}}/comment/{{this._id}}/delete" method="POST" style="margin-top:0.4rem">
+                <button type="submit"> Delete Comment</button>
+              </form>
+              
+            {{else}}
+                {{#if (eq this.username @root.user.username)}}
+                  <form action="/restaurant/{{../restaurant._id}}/comment/{{this._id}}/delete" method="POST" style="margin-top:0.4rem">
+                    <button type="submit"> Delete Comment</button>
+                  </form>
+                {{/if}}
+            {{/if}}
+
+            {{#if (eq this.username @root.user.username)}}
+                <form action="/restaurant/{{../restaurant._id}}/comment/{{this._id}}/edit" method="GET" style="margin-top:0.4rem">
+                <button type="submit"> Edit Comment</button>
+                </form>
+            {{/if}}
+
+            {{#if this.replies.length}}
+                <div class="replies" id="replies-{{this._id}}">
+                  <span><strong>Replies:</strong></span>
+                  <ul>
+                  {{#each this.replies}}
+                    <li>
+                      <span><strong><a href="/profile/{{this.username}}">{{this.username}}</a></strong></span>
+                      <span>{{this.date}}</span>
+                      <p>{{this.message}}</p>
+
+                      {{#if (eq this.username @root.user.username)}}
+                          <form action="/restaurant/{{@root.restaurant._id}}/comment/{{this._id}}/edit" method="GET" style="margin-top:0.4rem">
+                          <button type="submit"> Edit Reply</button>
+                          </form>
+                      {{/if}}
+                    </li>
+                  {{/each}}
+                  </ul>
+                </div>
+            {{else}}
+            {{/if}}
+            <hr>
+      </section>
+      {{/each}}
+    {{else}}<p id="no-comments-msg">No comments to see here... Be the first to post!</p>{{/if}}
+    </div>
+  </section>
+
+  <script src="/public/js/newComment.js"></script>
+
+</main>
