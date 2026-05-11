@@ -6,7 +6,7 @@ import helpers from "../helpers.js";
 import { getCommentsByRestaurant, createComment, patchCommentById, addReplyByCommentId, deleteCommentById, getCommentById, removeCommentById } from "../data/comments.js";
 import {getReviewsByRestaurant, createReview, patchReviewById,
   getReviewById, SURVEY_QUESTIONS, validateSurvey,adminDeleteReviewById,
-  flagOutdatedReviews} from "../data/reviews.js";
+  flagOutdatedReviews, voteOnReview} from "../data/reviews.js";
 import userData from "../data/users.js";
 import multer from "multer";
 import {followRestaurant, unfollowRestaurant, updateFollowVisibility} from "../data/users.js";
@@ -73,6 +73,11 @@ async function getRestaurantPageData(restaurantId, currentUserId) {
     date: r.date,
     edited: r.edited,
     flagged: r.flagged,
+    upvoteCount:   (r.upvotes   || []).length,
+    downvoteCount: (r.downvotes || []).length,
+    userUpvoted:   (r.upvotes   || []).map(id => id.toString()).includes(currentUserId),
+    userDownvoted: (r.downvotes || []).map(id => id.toString()).includes(currentUserId),
+    isOwnReview:   r.userID.toString() === currentUserId,
     surveyRows: SURVEY_QUESTIONS.map((q) => ({
       label:  q.label,
       answer: r.survey ? formatSurveyAnswer(q, r.survey[q.key]) : "—",
@@ -313,6 +318,9 @@ router.route("/restaurant/:id").get(loginGuard, async (req, res) => {
       comments: commentData,
       commentCount: commentCount,
       adminBoroOptions,
+      isClosed: data.isClosed || false,
+      closedVoteCount: (data.closedVotes || []).length,
+      reopenVoteCount: (data.reopenVotes || []).length,
     });
   } catch (e) {
     return res.status(404).render("error", { errorClass: "error", error: e });
@@ -873,6 +881,53 @@ router.route("/restaurant/:id/comment/:commentId/delete").post(loginGuard, async
   }
 
   return res.redirect(`/restaurant/${restaurantId}`);
+});
+
+router.route("/review/:reviewId/upvote").post(loginGuard, async (req, res) => {
+  try {
+      const reviewId = helpers.checkId(req.params.reviewId, "reviewId");
+      const userId   = helpers.checkId(req.session.user._id, "userId");
+      const result   = await voteOnReview(reviewId, userId, "upvote");
+      // Redirect back to the restaurant page
+      const review   = result.deleted ? null : await getReviewById(reviewId);
+      const restaurantId = review ? review.restaurantID.toString() : req.headers.referer;
+      return res.redirect(req.headers.referer || "/home");
+  } catch (e) {
+      return res.status(400).render("error", { errorClass: "error", error: e });
+  }
+});
+
+router.route("/review/:reviewId/downvote").post(loginGuard, async (req, res) => {
+  try {
+      const reviewId = helpers.checkId(req.params.reviewId, "reviewId");
+      const userId   = helpers.checkId(req.session.user._id, "userId");
+      await voteOnReview(reviewId, userId, "downvote");
+      return res.redirect(req.headers.referer || "/home");
+  } catch (e) {
+      return res.status(400).render("error", { errorClass: "error", error: e });
+  }
+});
+
+router.route("/restaurant/:id/vote-closed").post(loginGuard, async (req, res) => {
+  try {
+      const restaurantId = helpers.checkId(req.params.id, "restaurantId");
+      const userId = helpers.checkId(req.session.user._id, "userId");
+      await restaurants.voteRestaurantClosed(restaurantId, userId);
+      return res.redirect(`/restaurant/${restaurantId}`);
+  } catch (e) {
+      return res.status(400).render("error", { errorClass: "error", error: String(e) });
+  }
+});
+
+router.route("/restaurant/:id/vote-open").post(loginGuard, async (req, res) => {
+  try {
+      const restaurantId = helpers.checkId(req.params.id, "restaurantId");
+      const userId = helpers.checkId(req.session.user._id, "userId");
+      await restaurants.voteRestaurantOpen(restaurantId, userId);
+      return res.redirect(`/restaurant/${restaurantId}`);
+  } catch (e) {
+      return res.status(400).render("error", { errorClass: "error", error: String(e) });
+  }
 });
 
 export default router;

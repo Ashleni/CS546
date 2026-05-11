@@ -2,6 +2,7 @@ import { Router } from "express";
 import helpers from "../helpers.js";
 import * as restaurants from "../data/restaurants.js";
 import { loginGuard } from "../middleware.js";
+import { getTopContributors } from "../data/users.js";
 
 const router = Router();
 
@@ -118,6 +119,34 @@ router.route("/restaurantsLeaderboard").post(loginGuard, async (req, res) => {
   } catch (e) {
     return renderSearchError(res, "searchCleanest", "Search Cleanest Restaurants", 404, e);
   }
+});
+
+router.route("/leaderboard/contributors").get(loginGuard, async (req, res) => {
+  try {
+      const contributors = await getTopContributors(10);
+      return res.render("topContributors", {
+          title: "Top Contributors",
+          contributors,
+      });
+  } catch (e) {
+      return res.status(500).render("error", { errorClass: "error", error: e });
+  }
+});
+
+
+router.route("/map").get(loginGuard, async (req, res) => {
+    try {
+        // Pass all restaurants (just id, name, boro, cuisine — no full data needed)
+        const allRestaurants = await restaurants.getAllRestaurants();
+        // Stringify for embedding in the page as JSON
+        const restaurantsJSON = JSON.stringify(allRestaurants);
+        return res.render("map", {
+            title: "Restaurant Map",
+            restaurantsJSON,
+        });
+    } catch (e) {
+        return res.status(500).render("error", { errorClass: "error", error: e });
+    }
 });
 
 export default router;
