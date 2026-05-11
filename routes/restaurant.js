@@ -64,6 +64,13 @@ async function getRestaurantPageData(restaurantId, currentUserId) {
     } 
     avgRating =  (sumReviews / reviewData.length).toFixed(1);
   }
+
+  const surveyWordSample = {
+    foodHandlingPractices: 'not_observed',
+    foodTemperature: 'unsure',
+    pestSighting: 'no'
+  }
+
   let publicReviews  = reviewData.map((r) => ({
     _id: r._id.toString(),
     username: r.username,
@@ -78,10 +85,18 @@ async function getRestaurantPageData(restaurantId, currentUserId) {
     userUpvoted:   (r.upvotes   || []).map(id => id.toString()).includes(currentUserId),
     userDownvoted: (r.downvotes || []).map(id => id.toString()).includes(currentUserId),
     isOwnReview:   r.userID.toString() === currentUserId,
-    surveyRows: SURVEY_QUESTIONS.map((q) => ({
-      label:  q.label,
-      answer: r.survey ? formatSurveyAnswer(q, r.survey[q.key]) : "—",
-    })),
+    surveyRows: SURVEY_QUESTIONS.map((q) => {
+      let a = null;
+      if (r.survey) a = r.survey[q.key];
+      else {
+        if (q.type === 'scale') a = 3;
+        else a = surveyWordSample[q.key];
+      }
+      return {
+        label: q.label,
+        answer: formatSurveyAnswer(q, a)
+      }
+    }),
   }));
   // Comments
   let commentData = [];
