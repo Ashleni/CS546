@@ -4,7 +4,7 @@
         <div id="error" class="formError"{{#unless error}} style="display:none"{{/unless}}>{{error}}</div>
         <h2>Create</h2>              
             {{!-- Create --}}
-            <div id="createRestaurantDiv" class="form-container">
+            <div id="createRestaurantDiv" class="create-form-container">
                 <form action="/admin/createRestaurant" method="POST" name="createRestaurant-form" id="createRestaurant-form">
                 <label for="newRestaurantName">
                     Restaurant Name
@@ -134,6 +134,7 @@
                         <form action="/admin/restaurant/{{this._id}}/delete" method="POST" name="delete-form-{{this._id}}" id="delete-form-{{this._id}}">
                             <label for="restaurantDeletionId-{{this._id}}">
                                 <h4>Delete Restaurant</h4>
+                                <p>Type Id to confirm : {{this._id}}</p>
                                 <input type="text" name="restaurantDeletionId" id="restaurantDeletionId-{{this._id}}" placeholder="{{this._id}}" required>
                             </label>
                             <button type="submit" name="deleteRestaurantButton" id="deleteRestaurantButton-{{this._id}}">Confirm deletion with restaurant id</button> 
