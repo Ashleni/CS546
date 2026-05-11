@@ -3,7 +3,7 @@ import { restaurants } from "../config/mongoCollections.js";
 import helpers from "../helpers.js";
 import Fuse from "fuse.js";
 import { removeRestaurantFromAllFollowers } from "./users.js";
-
+import { inboxAlertGradeDrop } from "./notifs.js";
 
 /**
  * Create a restaurant profile with the specified information.
@@ -246,6 +246,14 @@ export const addInspection = async (
   restaurantID = helpers.checkId(restaurantID, "restaurantID");
   let restaurant = await getRestaurantById(restaurantID);
 
+  let currGrade = null;
+
+  if (restaurant.inspections.length > 0) {
+    let recentInspection = restaurant.inspections[restaurant.inspections.length - 1]
+    currGrade = recentInspection.grade;
+  }
+
+
   const inspectionInfo = {
     _id: new ObjectId(),
     inspectionDate: date,
@@ -267,6 +275,13 @@ export const addInspection = async (
 
   if (!updatedInfo)
     throw `Could not add inspection to restaurant with id '${restaurantID}'!`;
+
+  let grades = {A: 1, B: 2, C: 3};
+
+  if (currGrade && grades[grade] > grades[currGrade]) {
+    await inboxAlertGradeDrop(restaurantID, currGrade, grade)
+  }
+
   return updatedInfo;
 };
 

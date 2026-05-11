@@ -103,7 +103,7 @@ router.route("/profile/").get(loginGuard, async (req, res) => {
             }      
         }
 
-        const notifications = userInfo.notifications;
+        let notifications = userInfo.notifications;
         let unread = 0;
         // get number of unread
         if (notifications) {
@@ -113,6 +113,7 @@ router.route("/profile/").get(loginGuard, async (req, res) => {
                 }
             }
         }
+        else notifications = [];
 
         return res.render('userProfile', {
             title: `${userName}'s Profile`,

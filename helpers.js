@@ -328,7 +328,21 @@ const exportedMethods = {
     let today = new Date().setHours(0, 0, 0, 0);
 
     return (inputDate > today);
-  }
+  },
+
+  createNotification(title, message) {
+    title = this.checkString(title, 'title')
+    message = this.checkString(message, 'message')
+
+    return {
+      _id: new ObjectId(),
+      title,
+      message,
+      snippet: message.substring(0, 20) + "...",
+      date: this.currDate(),
+      viewed: false
+    }
+  },
 };
 
 export default exportedMethods;
