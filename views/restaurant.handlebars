@@ -150,6 +150,19 @@
   <header>
     <h1>{{restaurant.name}}</h1>
 
+    <!-- Quick Glance Inspection Letter Grade Timeline -->
+
+    {{#if restaurant.inspections.length}}
+    <div class="grade-timeline" aria-label="Inspection grade history">
+      {{#each restaurant.inspections}}
+        <div class="grade-chip grade-{{this.grade}}">
+          <span class="grade-chip-letter">{{this.grade}}</span>
+          <span class="grade-chip-date">{{this.inspectionDate}}</span>
+        </div>
+      {{/each}}
+    </div>
+    {{/if}}
+
     {{#if isClosed}}
       <div class="closed-banner">
         <strong>⚠️ This restaurant has been marked as temporarily closed by the community.</strong>
