@@ -152,9 +152,9 @@
 
     <!-- Quick Glance Inspection Letter Grade Timeline -->
 
-    {{#if restaurant.inspections.length}}
+    {{#if timelineInspections.length}}
     <div class="grade-timeline" aria-label="Inspection grade history">
-      {{#each restaurant.inspections}}
+      {{#each timelineInspections}}
         <div class="grade-chip grade-{{this.grade}}">
           <span class="grade-chip-letter">{{this.grade}}</span>
           <span class="grade-chip-date">{{this.inspectionDate}}</span>

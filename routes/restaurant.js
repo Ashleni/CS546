@@ -310,6 +310,7 @@ router.route("/restaurant/:id").get(loginGuard, async (req, res) => {
     return res.render("restaurant", {
       title: data.name,
       restaurant: data,
+      timelineInspections: data.inspections.slice(0, 5),
       userIsFollowing: userIsFollowing,
       isAdmin: isAdmin,
       avgRating: avgRating,

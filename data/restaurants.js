@@ -129,7 +129,10 @@ export const getAllRestaurants = async () => {
     .toArray();
 
   if (!restaurantList) throw "Error: Could not get all restaurants!";
-  return restaurantList;
+  return restaurantList.map((r) => ({
+    ...r,
+    _id: r._id.toString(),
+  }));
 };
 
 /**

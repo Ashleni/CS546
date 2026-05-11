@@ -1,4 +1,4 @@
-<main></main>
+<main>
   <h1>Top Contributors</h1>
   <p>The users who have contributed the most reviews to Delicacy!</p>
 
@@ -7,7 +7,7 @@
       {{#each contributors}}
         <li>
           <span class="rank">#{{this.rank}}</span>
-          <a href="/profile/{{this._id}}">{{this.username}}</a>
+          <a href="/profile/{{this.username}}">{{this.username}}</a>
           — {{this.reviewCount}} reviews
         </li>
       {{/each}}
