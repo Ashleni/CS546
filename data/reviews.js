@@ -7,6 +7,7 @@ import helpers from '../helpers.js';
 import { getRestaurantById } from "./restaurants.js";
 import userData from "./users.js";
 import { ObjectId } from "mongodb";
+import { inboxAlertReviewFlags } from "./notifs.js";
 
 // we may want to change these or add more questions. 
 export const SURVEY_QUESTIONS = [
@@ -551,4 +552,6 @@ export const flagOutdatedReviews = async (restaurantId) => {
       });
     }
   }
+
+  await inboxAlertReviewFlags(restaurantId);
 };

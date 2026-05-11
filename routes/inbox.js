@@ -13,7 +13,7 @@ router.route("/inbox").get(loginGuard, async (req, res) => {
     if (req.session.user.role.toLowerCase() === "admin") isAdmin = true;
 
     const userInfo = await userData.getUserById(req.session.user._id);
-    const notifications = userInfo.notifications;
+    let notifications = userInfo.notifications;
 
     if (notifications) {
       for (let i = 0; i < notifications.length; i++) {
@@ -23,11 +23,14 @@ router.route("/inbox").get(loginGuard, async (req, res) => {
         notifications[i].snippet = snippet;
       }
     }
+    else notifications = [];
 
     return res.render("inbox", {
       title: "Your Inbox",
       sortByUnread: false,
       notifications,
+      user,
+      isAdmin
     });
   } catch (e) {
     return res.status(404).render("error", { errorClass: "error", error: e });
@@ -42,22 +45,28 @@ router.route("/inbox/unread").get(loginGuard, async (req, res) => {
     if (req.session.user.role.toLowerCase() === "admin") isAdmin = true;
 
     const userInfo = await userData.getUserById(req.session.user._id);
-    const notifications = userInfo.notifications;
+    let notifications = userInfo.notifications;
 
     let unread = [];
     if (notifications) {
       // only get unread
       for (let i = 0; i < notifications.length; i++) {
         if (notifications[i].viewed === false) {
+          let message = notifications[i].message;
+          let cutoff = Math.floor(message.length * 0.65);
+          notifications[i].snippet = message.substring(0, cutoff) + '...';
           unread.push(notifications[i]);
         }
       }
     }
+    else notifications = [];
 
     return res.render("inbox", {
       title: "Your Inbox",
       sortByUnread: true,
       unread,
+      user,
+      isAdmin
     });
   } catch (e) {
     return res.status(404).render("error", { errorClass: "error", error: e });

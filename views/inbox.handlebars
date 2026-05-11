@@ -5,13 +5,17 @@
 
     {{#if sortByUnread}}
     <a href="/inbox">Go Back<br></a>
-        {{#if unread}}
+        {{#if unread.length}}
             {{#each unread}}
                 <a class="notifNotViewed" href="/inbox/{{this._id}}">{{this.title}}<br></a>
                 <p class="notifNotViewed">{{this.date}}</p>
                 <p class="notifNotViewed">
-                    {{#if this.snippet}}{{this.snippet}}{{else}}{{/if}}
-                <p>
+                    {{#if this.message}}
+                        {{this.message}}
+                    {{else}}
+                        {{this.message}}
+                    {{/if}}
+                </p>
                 <hr>
             {{/each}}
         {{else}}
@@ -21,21 +25,29 @@
         <a href="/inbox/unread">Sort By Unread</a>
 
         <div class="inbox">
-            {{#if notifications}}
+            {{#if notifications.length}}
                 {{#each notifications}}
                     {{#if this.viewed}}
                     <a class="notifViewed" href="/inbox/{{this._id}}">{{this.title}}<br></a>
                     <p class="notifViewed">{{this.date}}</p>
                     <p class="notifViewed">
-                        {{#if this.snippet}}{{this.snippet}}{{else}}{{/if}}
-                    <p>
+                        {{#if this.message}}
+                            {{this.message}}
+                        {{else}}
+                            {{this.message}}
+                        {{/if}}
+                    </p>
                     <hr>
                     {{else}}
                     <a class="notifNotViewed" href="/inbox/{{this._id}}">{{this.title}}<br></a>
                     <p class="notifNotViewed">{{this.date}}</p>
                     <p class="notifNotViewed">
-                        {{#if this.snippet}}{{this.snippet}}{{else}}{{/if}}
-                    <p>
+                        {{#if this.message}}
+                            {{this.message}}
+                        {{else}}
+                            {{this.message}}
+                        {{/if}}
+                    </p>
                     <hr>
                     {{/if}}
                 {{/each}}
