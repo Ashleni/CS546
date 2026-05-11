@@ -40,7 +40,13 @@ router.route("/searchResults").post(loginGuard, async (req, res) => {
     try {
       boro = helpers.checkBoro(info.boro);
     } catch (e) {
-      return renderSearchError(res, "home", "Restaurant Search", 400, "Invalid Borough Location!");
+      return renderSearchError(
+        res,
+        "home",
+        "Restaurant Search",
+        400,
+        "Invalid Borough Location!",
+      );
     }
   }
 
@@ -51,7 +57,13 @@ router.route("/searchResults").post(loginGuard, async (req, res) => {
   }
 
   if (name === "" && boro === "" && cuisine === "") {
-    return renderSearchError(res, "home", "Restaurant Search", 400, "You must supply a search term!");
+    return renderSearchError(
+      res,
+      "home",
+      "Restaurant Search",
+      400,
+      "You must supply a search term!",
+    );
   }
 
   try {
@@ -74,7 +86,13 @@ router.route("/searchCleanest").get(loginGuard, async (req, res) => {
       title: "Search Cleanest Restaurants",
     });
   } catch (e) {
-    return renderSearchError(res, "searchCleanest", "Search Cleanest Restaurants", 404, e);
+    return renderSearchError(
+      res,
+      "searchCleanest",
+      "Search Cleanest Restaurants",
+      404,
+      e,
+    );
   }
 });
 
@@ -96,7 +114,13 @@ router.route("/restaurantsLeaderboard").post(loginGuard, async (req, res) => {
     try {
       boro = helpers.checkBoro(info.boro);
     } catch (e) {
-      return renderSearchError(res, "searchCleanest", "Search Cleanest Restaurants", 400, "Invalid Borough Location!");
+      return renderSearchError(
+        res,
+        "searchCleanest",
+        "Search Cleanest Restaurants",
+        400,
+        "Invalid Borough Location!",
+      );
     }
   }
 
@@ -116,36 +140,41 @@ router.route("/restaurantsLeaderboard").post(loginGuard, async (req, res) => {
       restaurantsData: data,
     });
   } catch (e) {
-    return renderSearchError(res, "searchCleanest", "Search Cleanest Restaurants", 404, e);
+    return renderSearchError(
+      res,
+      "searchCleanest",
+      "Search Cleanest Restaurants",
+      404,
+      e,
+    );
   }
 });
 
 router.route("/leaderboard/contributors").get(loginGuard, async (req, res) => {
   try {
-      const contributors = await getTopContributors(10);
-      return res.render("topContributors", {
-          title: "Top Contributors",
-          contributors,
-      });
+    const contributors = await getTopContributors(10);
+    return res.render("topContributors", {
+      title: "Top Contributors",
+      contributors,
+    });
   } catch (e) {
-      return res.status(500).render("error", { errorClass: "error", error: e });
+    return res.status(500).render("error", { errorClass: "error", error: e });
   }
 });
 
-
 router.route("/map").get(loginGuard, async (req, res) => {
-    try {
-        // Pass all restaurants (just id, name, boro, cuisine — no full data needed)
-        const allRestaurants = await restaurants.getAllRestaurants();
-        // Stringify for embedding in the page as JSON
-        const restaurantsJSON = JSON.stringify(allRestaurants);
-        return res.render("map", {
-            title: "Restaurant Map",
-            restaurantsJSON,
-        });
-    } catch (e) {
-        return res.status(500).render("error", { errorClass: "error", error: e });
-    }
+  try {
+    // Pass all restaurants (just id, name, boro, cuisine — no full data needed)
+    const allRestaurants = await restaurants.getAllRestaurants();
+    // Stringify for embedding in the page as JSON
+    const restaurantsJSON = JSON.stringify(allRestaurants);
+    return res.render("map", {
+      title: "Restaurant Map",
+      restaurantsJSON,
+    });
+  } catch (e) {
+    return res.status(500).render("error", { errorClass: "error", error: e });
+  }
 });
 
 export default router;
