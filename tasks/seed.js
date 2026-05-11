@@ -55,6 +55,9 @@ const loadRestaurantsFromCSV = async (csvPath) => {
         inspections: [],
         userReviews: [],
         userComments: [],
+        isClosed: false,
+        closedVotes: [],
+        reopenVotes: [],
       });
     }
 
@@ -89,12 +92,6 @@ const main = async () => {
   const JohnsPizzeriaID = new ObjectId();
   const LinDaughtersID = new ObjectId();
   const restaurant218ID = new ObjectId();
-  const KingsWokID = new ObjectId();
-  const SculptCafeID = new ObjectId();
-  const TeaMilkID = new ObjectId();
-  const TGFlavorsID = new ObjectId();
-  const SNAFUID = new ObjectId();
-  const SubwayID = new ObjectId();
 
   // reviews
   const AlanReview1 = new ObjectId(); // old mill cafe
@@ -257,6 +254,9 @@ const main = async () => {
       inspections: [], // example with no inspections
       userReviews: [AlanReview1, CharlieReview1],
       userComments: [AlanComment1],
+      isClosed: false,
+      closedVotes: [],
+      reopenVotes: [],
     },
     {
       _id: JohnsPizzeriaID,
@@ -293,6 +293,9 @@ const main = async () => {
       ],
       userReviews: [],
       userComments: [AnnaComment1],
+      isClosed: false,
+      closedVotes: [],
+      reopenVotes: [],
     },
     {
       _id: LinDaughtersID,
@@ -308,6 +311,9 @@ const main = async () => {
       inspections: [],
       userReviews: [AnnaReview1, JohnReview1, AlanReview2],
       userComments: [],
+      isClosed: false,
+      closedVotes: [],
+      reopenVotes: [],
     },
     {
       _id: restaurant218ID,
@@ -344,99 +350,9 @@ const main = async () => {
       ],
       userReviews: [],
       userComments: [],
-    },
-
-    // the following are intended to simply populate more restaurants to model the search and following features,
-    // there will be no reviews, inspection history, etc.
-    {
-      _id: KingsWokID,
-      name: "King's Wok",
-      boro: "brooklyn",
-      address: {
-        building: "261",
-        street: "Troy Avenue",
-        zip: "11213",
-      },
-      phone: "7183631187",
-      cuisine: "Chinese",
-      inspections: [],
-      userReviews: [],
-      userComments: [],
-    },
-    {
-      _id: SculptCafeID,
-      name: "The Sculpt Cafe",
-      boro: "staten island",
-      address: {
-        building: "1584",
-        street: "Richmond Rd",
-        zip: "10304",
-      },
-      phone: "3474660072",
-      cuisine: "coffee/tea",
-      inspections: [],
-      userReviews: [],
-      userComments: [],
-    },
-    {
-      _id: TeaMilkID,
-      name: "Tea and Milk",
-      boro: "queens",
-      address: {
-        building: "32-02",
-        street: "34 Avenue",
-        zip: "11106",
-      },
-      phone: "9174980618",
-      cuisine: "coffee/tea",
-      inspections: [],
-      userReviews: [],
-      userComments: [],
-    },
-    {
-      _id: TGFlavorsID,
-      name: "T & G Flavors",
-      boro: "queens",
-      address: {
-        building: "228-01",
-        street: "Linden Boulevard",
-        zip: "11411",
-      },
-      phone: "7187122956",
-      cuisine: "caribbean",
-      inspections: [],
-      userReviews: [],
-      userComments: [],
-    },
-    {
-      _id: SNAFUID,
-      name: "SNAFU",
-      boro: "manhattan",
-      address: {
-        building: "127",
-        street: "East 47 Street",
-        zip: "10017",
-      },
-      phone: "2123179100",
-      cuisine: "american",
-      inspections: [],
-      userReviews: [],
-      userComments: [],
-    },
-    {
-      _id: SubwayID,
-      name: "Subway",
-      boro: "queens",
-      address: {
-        building: "69-79",
-        street: "Grand Avenue",
-        zip: "11378",
-      },
-      phone: "9174597040",
-      cuisine: "sandwiches",
-      inspections: [],
-      userReviews: [],
-      userComments: [],
+      isClosed: false,
+      closedVotes: [],
+      reopenVotes: [],
     },
   ];
 

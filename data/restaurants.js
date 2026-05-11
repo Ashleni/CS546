@@ -745,11 +745,13 @@ export const voteRestaurantClosed = async (restaurantId, userId) => {
 
   const threshold = 5; // number of "closed" votes before auto-closing
 
-  let update = { $addToSet: { closedVotes: new ObjectId(userId) } };
-
   const newCount = closedVotes.length + 1;
+  let update;
+
   if (newCount >= threshold) {
-    update.$set = { isClosed: true, closedVotes: [], reopenVotes: [] };
+    update = { $set: { isClosed: true, closedVotes: [], reopenVotes: [] } };
+  } else {
+    update = { $addToSet: { closedVotes: new ObjectId(userId) } };
   }
 
   await restaurantCollection.updateOne(
@@ -776,11 +778,14 @@ export const voteRestaurantOpen = async (restaurantId, userId) => {
     throw "You have already voted to reopen this restaurant.";
 
   const threshold = 10;
-  let update = { $addToSet: { reopenVotes: new ObjectId(userId) } };
 
   const newCount = reopenVotes.length + 1;
+  let update;
+
   if (newCount >= threshold) {
-    update.$set = { isClosed: false, closedVotes: [], reopenVotes: [] };
+    update = { $set: { isClosed: false, closedVotes: [], reopenVotes: [] } };
+  } else {
+    update = { $addToSet: { reopenVotes: new ObjectId(userId) } };
   }
 
   await restaurantCollection.updateOne(
