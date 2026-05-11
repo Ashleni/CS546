@@ -29,7 +29,7 @@ router.route("/inbox").get(loginGuard, async (req, res) => {
       title: "Your Inbox",
       sortByUnread: false,
       notifications,
-      user,
+      user: req.session.user,
       isAdmin
     });
   } catch (e) {
@@ -65,7 +65,7 @@ router.route("/inbox/unread").get(loginGuard, async (req, res) => {
       title: "Your Inbox",
       sortByUnread: true,
       unread,
-      user,
+      user: req.session.user,
       isAdmin
     });
   } catch (e) {
