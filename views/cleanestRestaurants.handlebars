@@ -23,7 +23,7 @@
                 <p class="resultsDetails">
                     Borough: {{#if this.restaurant.boro}}{{this.restaurant.boro}}{{else}}Not Listed{{/if}}<br>
                     Cuisine: {{#if this.restaurant.cuisine}}{{this.restaurant.cuisine}}{{else}}Not Listed{{/if}}<br>
-                    {{this.consecutive}} consecutive A's
+                    {{this.consecutive}} consecutive A rating{{#unless (eq this.consecutive 1)}}s{{/unless}}
                 <p>
                 <hr>
             </li>
