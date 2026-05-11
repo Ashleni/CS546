@@ -56,7 +56,6 @@ router.route("/searchResults").post(loginGuard, async (req, res) => {
 
   try {
     const data = await restaurants.search(name, boro, cuisine);
-    console.log(data);
     return res.render("searchResults", {
       title: "Restaurants Found",
       name: name,
