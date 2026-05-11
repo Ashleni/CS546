@@ -20,7 +20,7 @@
     let editBtn = '';
     if (reply.username === currentUser) {
       editBtn =
-        '<form action="/restaurant/' + esc(restaurantId) + '/comment/' + esc(reply._id) + '/edit" method="GET" style="margin-top:0.4rem">' +
+        '<form action="/restaurant/' + esc(restaurantId) + '/comment/' + esc(reply._id) + '/edit" method="GET">' +
           '<button type="submit">Edit Reply</button>' +
         '</form>';
     }
@@ -41,7 +41,7 @@
     let form = $(this);
     let localError = form.find('.reply-error');
     if (!localError.length) {
-      localError = $('<div class="reply-error formError" style="display:none"></div>');
+      localError = $('<div class="reply-error formError"></div>');
       form.append(localError);
     }
 
@@ -180,14 +180,14 @@
               '<textarea name="reply" placeholder="What\'s on your mind?"></textarea>' +
             '</label>' +
             '<button type="submit">Post</button>' +
-            '<div class="reply-error formError" style="display:none"></div>' +
+            '<div class="reply-error formError"></div>' +
           '</form>';
 
         let deleteBtn = '';
         if (isAdmin || c.username === currentUser) {
           deleteBtn =
             '<form action="/restaurant/' + esc(restaurantId) + '/comment/' + esc(c._id) + '/delete" ' +
-                  'method="POST" style="margin-top:0.4rem">' +
+                  'method="POST">' +
               '<button type="submit">Delete Comment</button>' +
             '</form>';
         }
@@ -196,7 +196,7 @@
         if (c.username === currentUser) {
           editBtn =
             '<form action="/restaurant/' + esc(restaurantId) + '/comment/' + esc(c._id) + '/edit" ' +
-                  'method="GET" style="margin-top:0.4rem">' +
+                  'method="GET">' +
               '<button type="submit">Edit Comment</button>' +
             '</form>';
         }

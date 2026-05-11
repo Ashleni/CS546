@@ -163,8 +163,11 @@ button:hover, .btn-primary:hover { background:#8f3413; }
 .btn-secondary { background:#eee; color:#333; border:1px solid #ccc; }
 .btn-secondary:hover{ background:#ddd; }
 
+button[type="submit"] {
+  margin-top: 0.4rem;
+}
 
-.error, .formError, .form-error-banner {
+.error, .formError, .inspectionFormError, .form-error-banner {
   color:#b5451b;
   background:#fdecea;
   border:1px solid #f5c6c0;
@@ -172,6 +175,27 @@ button:hover, .btn-primary:hover { background:#8f3413; }
   padding:.6rem .9rem;
   font-size:.9rem;
   margin-bottom:1rem;
+}
+
+.formError.admin-form-error {
+  margin-bottom:8px
+}
+
+.reply-error.formError {
+  display: none;
+  margin-bottom: 8px;
+}
+
+.closed-banner form, .inlineForm {
+  display: inline;
+}
+
+.marginForm {
+  margin-top: 0.5rem;
+}
+
+.reply-error.formError {
+  display: none;
 }
 
 .review-section, .inspection-history, .comment-section {

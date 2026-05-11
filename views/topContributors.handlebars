@@ -3,7 +3,7 @@
   <p>The users who have contributed the most reviews to Delicacy!</p>
 
   {{#if contributors}}
-    <ol class="leaderboard">
+    <ul class="leaderboard">
       {{#each contributors}}
         <li>
           <span class="rank">#{{this.rank}}</span>
@@ -11,7 +11,7 @@
           — {{this.reviewCount}} reviews
         </li>
       {{/each}}
-    </ol>
+    </ul>
   {{else}}
     <p>No contributors yet. Be the first to leave a review!</p>
   {{/if}}

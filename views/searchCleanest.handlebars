@@ -4,7 +4,7 @@
     <p>Find the cleanest restaurants by name, borough, and/or cuisine type!</p>
     <p>Or, click submit without any search terms and find the top 25 cleanest restaurants in NYC!</p>
 
-    <div id="error" class="formError"{{#unless error}} style="display:none"{{/unless}}>{{error}}</div>
+    <div id="error" class="formError">{{error}}</div>
 
     <form action="/restaurantsLeaderboard" method="post" id="search-form-cleanest">
         <label for="name">

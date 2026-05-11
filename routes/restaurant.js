@@ -153,6 +153,12 @@ async function buildRestaurantPageData(req, restaurantId, extra = {}) {
     avgRating = (sumReviews / reviewData.length).toFixed(1);
   }
 
+  const surveyWordSample = {
+    foodHandlingPractices: 'not_observed',
+    foodTemperature: 'unsure',
+    pestSighting: 'no'
+  }
+
   let publicReviews = reviewData.map((r) => ({
     _id: r._id.toString(),
     username: r.username,
@@ -161,10 +167,18 @@ async function buildRestaurantPageData(req, restaurantId, extra = {}) {
     photos: r.photos || [],
     date: r.date,
     edited: r.edited,
-    surveyRows: SURVEY_QUESTIONS.map((q) => ({
-      label: q.label,
-      answer: r.survey ? formatSurveyAnswer(q, r.survey[q.key]) : "—",
-    })),
+    surveyRows: SURVEY_QUESTIONS.map((q) => {
+      let a = null;
+      if (r.survey) a = r.survey[q.key];
+      else {
+        if (q.type === 'scale') a = 3;
+        else a = surveyWordSample[q.key];
+      }
+      return {
+        label: q.label,
+        answer: formatSurveyAnswer(q, a)
+      }
+    }),
   }));
 
   let commentData = [];
@@ -788,6 +802,13 @@ router.route("/restaurant/:id/admin/inspection").post(adminGuard, async (req, re
   }
   
   try {
+    const restaurant = await restaurants.getRestaurantById(id);
+    const sameDateInspections = restaurant.inspections.find( inspect => inspect.inspectionDate === inspectionDate);
+
+    if (sameDateInspections && sameDateInspections.grade !== grade) {
+      throw 'Inspections from the same date must have the same grade';
+    }
+    
     await restaurants.addInspection(id, inspectionDate, action, violationCode, violationDescription, criticalFlag, grade);
   } catch (e) {
     return renderRestaurantPage(res, req, id, 400, e);

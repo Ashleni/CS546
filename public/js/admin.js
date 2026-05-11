@@ -4,7 +4,7 @@
   function showFormError(form, message) {
     let errorDiv = form.find(".admin-form-error");
     if (!errorDiv.length) {
-      errorDiv = $('<div class="formError admin-form-error" style="margin-bottom:8px;"></div>');
+      errorDiv = $('<div class="formError admin-form-error"></div>');
       form.prepend(errorDiv);
     }
     errorDiv.text(message).show();

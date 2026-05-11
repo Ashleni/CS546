@@ -88,6 +88,8 @@ const main = async () => {
   const JohnMillerID = new ObjectId();
 
   // restaurants
+  const TGFlavorsID = new ObjectId();
+  const SNAFUID = new ObjectId();
   const OldMillCafeID = new ObjectId();
   const JohnsPizzeriaID = new ObjectId();
   const LinDaughtersID = new ObjectId();
@@ -121,12 +123,7 @@ const main = async () => {
       username: "alan.turing",
       role: "user",
       passwordHashed: await helpers.hashPassword("TuringMachine@1936"), // stores the hashed password
-      publicFollowingRestaurants: [
-        OldMillCafeID,
-        LinDaughtersID,
-        SculptCafeID,
-        SNAFUID,
-      ],
+      publicFollowingRestaurants: [],
       privateFollowingRestaurants: [restaurant218ID],
       reviewsCompleted: [AlanReview1, AlanReview2, AlanReview3],
       commentsPosted: [AlanComment1, AlanComment2],
@@ -348,7 +345,7 @@ const main = async () => {
           grade: "B",
         },
       ],
-      userReviews: [],
+      userReviews: [AlanReview3],
       userComments: [],
       isClosed: false,
       closedVotes: [],

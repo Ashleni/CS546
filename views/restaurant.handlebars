@@ -166,7 +166,7 @@
     {{#if isClosed}}
       <div class="closed-banner">
         <strong>⚠️ This restaurant has been marked as temporarily closed by the community.</strong>
-        <form action="/restaurant/{{restaurant._id}}/vote-open" method="POST" style="display:inline;">
+        <form action="/restaurant/{{restaurant._id}}/vote-open" method="POST">
           <button type="submit">This restaurant is open again ({{reopenVoteCount}}/10 votes)</button>
         </form>
       </div>
@@ -300,17 +300,17 @@
             </table>
           </details> 
           {{#if @root.isAdmin}}
-            <form action="/review/{{this._id}}/admin/delete" method="POST" style="margin-top:0.5rem">
+            <form class="marginForm" action="/review/{{this._id}}/admin/delete" method="POST">
               <button type="submit">Delete Review</button>
             </form>
           {{/if}}
 
           {{#unless this.isOwnReview}}
           <div class="review-votes">
-            <form action="/review/{{this._id}}/upvote" method="POST" style="display:inline;">
+            <form class="inlineForm" action="/review/{{this._id}}/upvote" method="POST">
               <button type="submit">▲ {{this.upvoteCount}}</button>
             </form>
-            <form action="/review/{{this._id}}/downvote" method="POST" style="display:inline;">
+            <form class="inlineForm" action="/review/{{this._id}}/downvote" method="POST">
               <button type="submit">▼ {{this.downvoteCount}}</button>
             </form>
           </div>
@@ -324,7 +324,7 @@
 
   <section class="comment-section">
 
-      <div id="error" class="formError"{{#unless error}} style="display:none"{{/unless}}>{{error}}</div>
+      <div id="error" class="formError">{{error}}</div>
 
     <h3>Comments (<span id="comment-count">{{commentCount}}</span>)</h3>
     <form action="/restaurant/{{restaurant._id}}/comment" method="POST" name="newComment-form" id="newComment-form"
@@ -351,24 +351,24 @@
                 <textarea name="reply" id="reply-{{this._id}}" placeholder="What's on your mind?"></textarea>
               </label>
               <button type="submit" name="postReplyButton-{{this._id}}" id="postReplyButton-{{this._id}}">Post</button>
-              <div class="reply-error formError" style="display:none"></div>
+              <div class="reply-error formError"></div>
             </form>
 
             {{#if @root.isAdmin}}
-              <form action="/restaurant/{{../restaurant._id}}/comment/{{this._id}}/delete" method="POST" style="margin-top:0.4rem">
+              <form class="marginForm" action="/restaurant/{{../restaurant._id}}/comment/{{this._id}}/delete" method="POST">
                 <button type="submit"> Delete Comment</button>
               </form>
               
             {{else}}
                 {{#if (eq this.username @root.user.username)}}
-                  <form action="/restaurant/{{../restaurant._id}}/comment/{{this._id}}/delete" method="POST" style="margin-top:0.4rem">
+                  <form class="marginForm" action="/restaurant/{{../restaurant._id}}/comment/{{this._id}}/delete" method="POST">
                     <button type="submit"> Delete Comment</button>
                   </form>
                 {{/if}}
             {{/if}}
 
             {{#if (eq this.username @root.user.username)}}
-                <form action="/restaurant/{{../restaurant._id}}/comment/{{this._id}}/edit" method="GET" style="margin-top:0.4rem">
+                <form class="marginForm" action="/restaurant/{{../restaurant._id}}/comment/{{this._id}}/edit" method="GET">
                 <button type="submit"> Edit Comment</button>
                 </form>
             {{/if}}
@@ -379,12 +379,12 @@
                   <ul>
                   {{#each this.replies}}
                     <li>
-                      <span><strong><a href="/profile/{{this.username}}">{{this.username}}</a></strong></span>
+                      <span><strong><a href="/profile/{{this.username}}">{{this.username}} | </a></strong></span>
                       <span>{{this.date}}</span>
                       <p>{{this.message}}</p>
 
                       {{#if (eq this.username @root.user.username)}}
-                          <form action="/restaurant/{{@root.restaurant._id}}/comment/{{this._id}}/edit" method="GET" style="margin-top:0.4rem">
+                          <form class="marginForm" action="/restaurant/{{@root.restaurant._id}}/comment/{{this._id}}/edit" method="GET">
                           <button type="submit"> Edit Reply</button>
                           </form>
                       {{/if}}
