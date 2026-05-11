@@ -54,7 +54,7 @@ $("#signup-form").submit((event) => {
     return;
   }
 
-  if (!nameRegex.test(username)) {
+  if (!usernameRegex.test(username)) {
     event.preventDefault();
     $("#error").text("Username is invalid!");
     $("#error").show();

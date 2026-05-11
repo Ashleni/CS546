@@ -7,12 +7,12 @@
         Go Back
     </a>
     {{#if restaurantsData}}
-        <h3 class="searchTerms">
+        <h2 class="searchTerms">
             Showing results for 
             {{#if name}}{{name}}{{else}}restaurants{{/if}}
             {{#if boro}}in {{boro}}{{else}}{{/if}}
             {{#if cuisine}}with cuisine type {{cuisine}}{{else}}{{/if}}
-        </h3>
+        </h2>
 
         <ol class="results">
             {{#each restaurantsData}}
@@ -23,7 +23,7 @@
                 <p class="resultsDetails">
                     Borough: {{#if this.restaurant.boro}}{{this.restaurant.boro}}{{else}}Not Listed{{/if}}<br>
                     Cuisine: {{#if this.restaurant.cuisine}}{{this.restaurant.cuisine}}{{else}}Not Listed{{/if}}<br>
-                    {{this.consecutive}} consecutive A's
+                    {{this.consecutive}} consecutive A rating{{#unless (eq this.consecutive 1)}}s{{/unless}}
                 <p>
                 <hr>
             </li>

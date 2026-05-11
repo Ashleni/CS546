@@ -17,11 +17,13 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node app.js",
-    "seed": "node ./tasks/seed.js"
+    "seed": "node ./tasks/seed.js",
+    "geocode": "node ./tasks/geocode.js"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",
     "csv-parse": "^6.2.1",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "express-handlebars": "^9.0.1",
     "express-session": "^1.19.0",

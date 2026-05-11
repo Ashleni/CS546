@@ -103,6 +103,9 @@ export const createRestaurant = async (
     inspections: [],
     userReviews: [],
     userComments: [],
+    isClosed: false,
+    closedVotes: [],
+    reopenVotes: [],
   };
 
   const restaurantCollection = await restaurants();
@@ -122,11 +125,24 @@ export const getAllRestaurants = async () => {
   const restaurantCollection = await restaurants();
   const restaurantList = await restaurantCollection
     .find({})
-    .project({ _id: 1, name: 1, ownerId: 1, address: 1, boro: 1, phone: 1, cuisine: 1 })
+    .project({
+      _id: 1,
+      name: 1,
+      ownerId: 1,
+      address: 1,
+      boro: 1,
+      phone: 1,
+      cuisine: 1,
+      latitude: 1,
+      longitude: 1,
+    })
     .toArray();
 
   if (!restaurantList) throw "Error: Could not get all restaurants!";
-  return restaurantList;
+  return restaurantList.map((r) => ({
+    ...r,
+    _id: r._id.toString(),
+  }));
 };
 
 /**
@@ -587,7 +603,7 @@ export const removeRestaurant = async (id) => {
 
   // Remove this restaurant from every user's following lists
   await removeRestaurantFromAllFollowers(id);
-  
+
   return { name: deletedRestaurant.name, deleted: true };
 };
 
@@ -688,7 +704,7 @@ export const getCleanestRestaurants = async (
       }
     }
 
-    if (consecutive >= 3) {
+    if (consecutive >= 1) {
       cleanestRestaurants.push({ restaurant: allRestaurants[i], consecutive });
     }
   }
@@ -724,4 +740,73 @@ export const getCleanestRestaurants = async (
   return cleanestRestaurants
     .sort((a, b) => b.consecutive - a.consecutive)
     .slice(0, 25);
+};
+
+export const voteRestaurantClosed = async (restaurantId, userId) => {
+  restaurantId = helpers.checkId(restaurantId, "restaurantId");
+  userId = helpers.checkId(userId, "userId");
+
+  const restaurantCollection = await restaurants();
+  const restaurant = await restaurantCollection.findOne({
+    _id: new ObjectId(restaurantId),
+  });
+
+  if (!restaurant) throw "Restaurant not found.";
+  if (restaurant.isClosed) throw "Restaurant is already marked as closed.";
+
+  // Prevent duplicate votes
+  const closedVotes = (restaurant.closedVotes || []).map((id) => id.toString());
+  if (closedVotes.includes(userId))
+    throw "You have already voted this restaurant as closed.";
+
+  const threshold = 5; // number of "closed" votes before auto-closing
+
+  const newCount = closedVotes.length + 1;
+  let update;
+
+  if (newCount >= threshold) {
+    update = { $set: { isClosed: true, closedVotes: [], reopenVotes: [] } };
+  } else {
+    update = { $addToSet: { closedVotes: new ObjectId(userId) } };
+  }
+
+  await restaurantCollection.updateOne(
+    { _id: new ObjectId(restaurantId) },
+    update,
+  );
+  return { voted: true, isClosed: newCount >= threshold };
+};
+
+export const voteRestaurantOpen = async (restaurantId, userId) => {
+  restaurantId = helpers.checkId(restaurantId, "restaurantId");
+  userId = helpers.checkId(userId, "userId");
+
+  const restaurantCollection = await restaurants();
+  const restaurant = await restaurantCollection.findOne({
+    _id: new ObjectId(restaurantId),
+  });
+
+  if (!restaurant) throw "Restaurant not found.";
+  if (!restaurant.isClosed) throw "Restaurant is not currently closed.";
+
+  const reopenVotes = (restaurant.reopenVotes || []).map((id) => id.toString());
+  if (reopenVotes.includes(userId))
+    throw "You have already voted to reopen this restaurant.";
+
+  const threshold = 10;
+
+  const newCount = reopenVotes.length + 1;
+  let update;
+
+  if (newCount >= threshold) {
+    update = { $set: { isClosed: false, closedVotes: [], reopenVotes: [] } };
+  } else {
+    update = { $addToSet: { reopenVotes: new ObjectId(userId) } };
+  }
+
+  await restaurantCollection.updateOne(
+    { _id: new ObjectId(restaurantId) },
+    update,
+  );
+  return { voted: true, isOpen: newCount >= threshold };
 };

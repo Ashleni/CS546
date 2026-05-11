@@ -150,6 +150,31 @@
   <header>
     <h1>{{restaurant.name}}</h1>
 
+    <!-- Quick Glance Inspection Letter Grade Timeline -->
+
+    {{#if timelineInspections.length}}
+    <div class="grade-timeline" aria-label="Inspection grade history">
+      {{#each timelineInspections}}
+        <div class="grade-chip grade-{{this.grade}}">
+          <span class="grade-chip-letter">{{this.grade}}</span>
+          <span class="grade-chip-date">{{this.inspectionDate}}</span>
+        </div>
+      {{/each}}
+    </div>
+    {{/if}}
+
+    {{#if isClosed}}
+      <div class="closed-banner">
+        <strong>⚠️ This restaurant has been marked as temporarily closed by the community.</strong>
+        <form action="/restaurant/{{restaurant._id}}/vote-open" method="POST" style="display:inline;">
+          <button type="submit">This restaurant is open again ({{reopenVoteCount}}/10 votes)</button>
+        </form>
+      </div>
+    {{else}}
+      <form action="/restaurant/{{restaurant._id}}/vote-closed" method="POST">
+        <button type="submit">Report as Temporarily Closed ({{closedVoteCount}}/5 votes)</button>
+      </form>
+    {{/if}}
 
     <!--  Follow button logic -->
     {{#if userIsFollowing}}
@@ -279,15 +304,23 @@
               <button type="submit">Delete Review</button>
             </form>
           {{/if}}
+
+          {{#unless this.isOwnReview}}
+          <div class="review-votes">
+            <form action="/review/{{this._id}}/upvote" method="POST" style="display:inline;">
+              <button type="submit">▲ {{this.upvoteCount}}</button>
+            </form>
+            <form action="/review/{{this._id}}/downvote" method="POST" style="display:inline;">
+              <button type="submit">▼ {{this.downvoteCount}}</button>
+            </form>
+          </div>
+          {{/unless}}
         </article>
       {{/each}}
     {{else}}
       <p class= "no-content">No reviews yet - be the first to leave one!</p>
     {{/if}}
   </section>
-
-
-
 
   <section class="comment-section">
 
