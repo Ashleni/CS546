@@ -1,7 +1,7 @@
-<main class="comment-form-page"> 
-    <a href= "/restaurant/{{restaurant._id}}" class= "back-link">Back to {{restaurant.name}}</a> 
+<main> 
+    <a href= "/restaurant/{{restaurant._id}}">Back to {{restaurant.name}}</a> 
     <h1> Edit Your Comment </h1>
-    <p class="restaurant-subtitle">{{restaurant.name}} - {{restaurant.boro}}</p>
+    <p>{{restaurant.name}} - {{restaurant.boro}}</p>
 
     {{#if error}}
     <div class="form-error-banner">{{error}}</div>  
@@ -21,4 +21,6 @@
         </label>
         <button type="submit" name="postMessageButton" id="postMessageButton">Post</button> 
     </form>  
+    <script src="/public/js/editComment.js"></script>
+
 </main>

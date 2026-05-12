@@ -2,7 +2,7 @@ $("#signup-form").submit((event) => {
   $("#error").hide();
 
   let nameRegex = /^[A-Za-z'-]{1,50}$/;
-  let usernameRegex = /^[A-Za-z0-9_.]{3,30}$/;
+  let usernameRegex = /^(?=.*[A-Za-z])[A-Za-z0-9_.]{3,30}$/;
   let passwordRegex = /^(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9])\S{8,}$/;
 
   // first name

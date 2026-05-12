@@ -1,11 +1,28 @@
 <main>
+    <a href="/inbox">Back to Inbox</a>
+
     <h1>{{notification.title}}</h1>
+    <p>{{notification.date}}</p>
+    <p>{{notification.message}}</p>
 
-    <p>
-        Date: {{notification.date}}
-    </p>
+    {{#if restaurantLink}}
+      <p><a href="/restaurant/{{restaurantLink.id}}">View {{restaurantLink.name}}</a></p>
+    {{/if}}
 
-    <p>
-        {{notification.message}}
-    </p>
+    {{#if flaggedReviews.length}}
+      <section class="review-section">
+        <h3>Flagged Reviews</h3>
+        {{#each flaggedReviews}}
+          <article>
+            <header>
+              <span><strong><a href="/profile/{{this.username}}">{{this.username}}</a></strong></span>
+              <span> &#9733; {{this.rating}}/5 | </span>
+              <span>{{this.date}}</span>
+              <span><strong> - Flagged: Outdated</strong></span>
+            </header>
+            <p>{{this.reviewText}}</p>
+          </article>
+        {{/each}}
+      </section>
+    {{/if}}
 </main>

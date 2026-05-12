@@ -121,8 +121,8 @@
 
         <label>
           Critical Flag
-          <select name="criticalFlag" required>
-            <option value="">Select</option>
+          <select name="criticalFlag">
+            <option value="">None</option>
             <option value="Not Critical">Not Critical</option>
             <option value="Critical">Critical</option>
           </select>
@@ -137,6 +137,10 @@
           Violation Description
           <input type="text" name="violationDescription" maxlength="100">
         </label>
+
+        {{#if inspectionError}}
+          <div class="formError">{{inspectionError}}</div>
+        {{/if}}
 
         <button type="submit">Add Inspection</button>
       </form>
@@ -253,7 +257,7 @@
   <!-- The review section, where users can add a review! -->
   <section class="review-section">
     <h2>Reviews ({{publicReviews.length}})</h2>
-    <div class="your-review-cta">
+    <div>
       {{#if userReview}}
         <p>
           You rated this restaurant {{userReview.rating}}/5
@@ -275,8 +279,8 @@
             <span class= "review-date">{{this.date}}{{#if this.edited}} (edited){{/if}}</span>
           </header>
  
-          <p class= "review-text">{{this.reviewText}}</p><br>
-          <span class= "review-flag"><strong>{{#if this.flagged}}Flagged: Outdated{{/if}}</strong></span>
+          <p>{{this.reviewText}}</p><br>
+          <span><strong>{{#if this.flagged}}Flagged: Outdated{{/if}}</strong></span>
 
           {{#if this.photos.length}} 
             <div class="review-photos"> 
@@ -286,14 +290,14 @@
             </div>
           {{/if}}
  
-          <details class= "survey-details">
+          <details>
             <summary>Hygiene &amp; Experience Survey</summary> 
-            <table class="survey-table">
+            <table>
               <tbody>
                 {{#each this.surveyRows}} 
                   <tr>
-                    <td class=  "survey-q">{{this.label}}</td>
-                    <td class= "survey-a">{{this.answer}}</td>
+                    <td>{{this.label}}</td>
+                    <td>{{this.answer}}</td>
                   </tr>
                 {{/each}} 
               </tbody>
@@ -305,16 +309,23 @@
             </form>
           {{/if}}
 
-          {{#unless this.isOwnReview}}
           <div class="review-votes">
-            <form class="inlineForm" action="/review/{{this._id}}/upvote" method="POST">
-              <button type="submit">▲ {{this.upvoteCount}}</button>
-            </form>
-            <form class="inlineForm" action="/review/{{this._id}}/downvote" method="POST">
-              <button type="submit">▼ {{this.downvoteCount}}</button>
-            </form>
+            {{#if this.isOwnReview}}
+              <form class="inlineForm">
+                <button type="button" disabled title="You cannot vote on your own review">▲ {{this.upvoteCount}}</button>
+              </form>
+              <form class="inlineForm">
+                <button type="button" disabled title="You cannot vote on your own review">▼ {{this.downvoteCount}}</button>
+              </form>
+            {{else}}
+              <form class="inlineForm" action="/review/{{this._id}}/upvote" method="POST">
+                <button type="submit">▲ {{this.upvoteCount}}</button>
+              </form>
+              <form class="inlineForm" action="/review/{{this._id}}/downvote" method="POST">
+                <button type="submit">▼ {{this.downvoteCount}}</button>
+              </form>
+            {{/if}}
           </div>
-          {{/unless}}
         </article>
       {{/each}}
     {{else}}
@@ -324,7 +335,7 @@
 
   <section class="comment-section">
 
-      <div id="error" class="formError">{{error}}</div>
+      <div id="error" class="formError" {{#unless error}}style="display:none"{{/unless}}>{{error}}</div> <!-- Please stop deleting this, this line prevents the empty error box bug. --> 
 
     <h3>Comments (<span id="comment-count">{{commentCount}}</span>)</h3>
     <form action="/restaurant/{{restaurant._id}}/comment" method="POST" name="newComment-form" id="newComment-form"
@@ -342,36 +353,41 @@
     {{#if comments.length}}
       {{#each comments}}
       <section class="single-comment" id="comment-{{this._id}}">
-        <span><strong><a href="/profile/{{this.username}}">{{this.username}}</a></strong></span>
-        <span>{{this.date}}</span>
+        <div class="comment-header">
+            <span><strong><a href="/profile/{{this.username}}">{{this.username}}</a></strong></span>
+            <span>{{this.date}}</span>
+        </div>
         <p>{{this.message}}</p>
             <form action="/restaurant/{{../restaurant._id}}/comment/{{this._id}}/reply" method="POST" class="reply-form" data-comment-id="{{this._id}}" name="newReply-form-{{this._id}}" id="newReply-form-{{this._id}}">
               <label for="reply-{{this._id}}">
                 Reply to this comment
                 <textarea name="reply" id="reply-{{this._id}}" placeholder="What's on your mind?"></textarea>
               </label>
-              <button type="submit" name="postReplyButton-{{this._id}}" id="postReplyButton-{{this._id}}">Post</button>
+              <!-- <button type="submit" name="postReplyButton-{{this._id}}" id="postReplyButton-{{this._id}}">Post</button> -->
               <div class="reply-error formError"></div>
             </form>
 
-            {{#if @root.isAdmin}}
-              <form class="marginForm" action="/restaurant/{{../restaurant._id}}/comment/{{this._id}}/delete" method="POST">
-                <button type="submit"> Delete Comment</button>
-              </form>
-              
-            {{else}}
+            <div class="comment-actiosn">
+              <button type="submit" form="newReply-form-{{this._id}}">Post</button>
+
+              {{#if @root.isAdmin}}
+                <form action="/restaurant/{{../restaurant._id}}/comment/{{this._id}}/delete" method="POST">
+                  <button type="submit">Delete Comment</button>
+                </form>
+              {{else}}
                 {{#if (eq this.username @root.user.username)}}
-                  <form class="marginForm" action="/restaurant/{{../restaurant._id}}/comment/{{this._id}}/delete" method="POST">
-                    <button type="submit"> Delete Comment</button>
+                  <form action="/restaurant/{{../restaurant._id}}/comment/{{this._id}}/delete" method="POST">
+                    <button type="submit">Delete Comment</button>
                   </form>
                 {{/if}}
-            {{/if}}
+              {{/if}}
 
-            {{#if (eq this.username @root.user.username)}}
-                <form class="marginForm" action="/restaurant/{{../restaurant._id}}/comment/{{this._id}}/edit" method="GET">
-                <button type="submit"> Edit Comment</button>
+              {{#if (eq this.username @root.user.username)}}
+                <form action="/restaurant/{{../restaurant._id}}/comment/{{this._id}}/edit" method="GET">
+                  <button type="submit">Edit Comment</button>
                 </form>
-            {{/if}}
+              {{/if}}
+            </div>
 
             {{#if this.replies.length}}
                 <div class="replies" id="replies-{{this._id}}">
@@ -379,15 +395,20 @@
                   <ul>
                   {{#each this.replies}}
                     <li>
-                      <span><strong><a href="/profile/{{this.username}}">{{this.username}} | </a></strong></span>
+                      <span><strong><a href="/profile/{{this.username}}">{{this.username}}</a></strong> | </span>
                       <span>{{this.date}}</span>
                       <p>{{this.message}}</p>
 
-                      {{#if (eq this.username @root.user.username)}}
-                          <form class="marginForm" action="/restaurant/{{@root.restaurant._id}}/comment/{{this._id}}/edit" method="GET">
-                          <button type="submit"> Edit Reply</button>
+                      <div class="comment-actiosn">
+                        {{#if (eq this.username @root.user.username)}}
+                          <form action="/restaurant/{{@root.restaurant._id}}/comment/{{../_id}}/reply/{{this._id}}/delete" method="POST">
+                            <button type="submit">Delete Reply</button>
                           </form>
-                      {{/if}}
+                          <form action="/restaurant/{{@root.restaurant._id}}/comment/{{this._id}}/edit" method="GET">
+                            <button type="submit">Edit Reply</button>
+                          </form>
+                        {{/if}}
+                      </div>
                     </li>
                   {{/each}}
                   </ul>

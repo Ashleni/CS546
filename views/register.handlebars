@@ -2,7 +2,7 @@
 
 <h1>Create an Account</h1>
 
-<div id="error" class="formError">{{error}}</div>
+      <div id="error" class="formError" {{#unless error}}style="display:none"{{/unless}}>{{error}}</div> <!-- Please stop deleting this, this line prevents the empty error box bug. --> 
 
 
 <form action="/register" method="POST" name="signup-form" id="signup-form">

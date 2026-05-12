@@ -3,7 +3,7 @@ import * as restaurants from "../data/restaurants.js";
 const router = Router();
 import { loginGuard, adminGuard } from "../middleware.js";
 import helpers from "../helpers.js";
-import { getCommentsByRestaurant, createComment, patchCommentById, addReplyByCommentId, deleteCommentById, getCommentById, removeCommentById } from "../data/comments.js";
+import { getCommentsByRestaurant, createComment, patchCommentById, addReplyByCommentId, deleteCommentById, getCommentById, removeCommentById,deleteReplyById } from "../data/comments.js";
 import {getReviewsByRestaurant, createReview, patchReviewById,
   getReviewById, SURVEY_QUESTIONS, validateSurvey,adminDeleteReviewById,
   flagOutdatedReviews, voteOnReview} from "../data/reviews.js";
@@ -220,7 +220,7 @@ async function buildRestaurantPageData(req, restaurantId, extra = {}) {
   const adminBoroOptions = BOROS.map((b) => ({
     value: b,
     label: b,
-    selected: b === data.boro,
+    selected: b.toLowerCase() === (data.boro || '').toLowerCase(),
   }));
 
   return {
@@ -333,7 +333,7 @@ router.route("/restaurant/:id").get(loginGuard, async (req, res) => {
     const adminBoroOptions = BOROS.map((b) => ({
       value: b,
       label: b,
-      selected: b === data.boro,
+      selected:  b.toLowerCase() === (data.boro || '').toLowerCase(),
     }));
 
     return res.render("restaurant", {
@@ -813,7 +813,9 @@ router.route("/restaurant/:id/admin/inspection").post(adminGuard, async (req, re
   }
 
   if (helpers.isDateFuture(inspectionDate)) {
-    return res.status(400).render("error", { errorClass: "error", error: 'Future inspection dates are not allowed' });
+    return renderRestaurantPage(res, req, id, 400, null, { inspectionError: 'Future inspection dates are not allowed.' 
+
+    });
   }
   
   try {
@@ -965,6 +967,28 @@ router.route("/restaurant/:id/vote-open").post(loginGuard, async (req, res) => {
   } catch (e) {
       return res.status(400).render("error", { errorClass: "error", error: String(e) });
   }
+});
+
+
+router.route("/restaurant/:id/comment/:commentId/reply/:replyId/delete").post(loginGuard, async (req, res) => {
+  let restaurantId, commentId, replyId, userId;
+
+  try {
+    restaurantId = helpers.checkId(req.params.id, "restaurantId");
+    commentId = helpers.checkId(req.params.commentId, "commentId");
+    replyId = helpers.checkId(req.params.replyId, "replyId");
+    userId = helpers.checkId(req.session.user._id, "userId");
+  } catch (e) {
+    return renderRestaurantPage(res, req, req.params.id, 400, e);
+  }
+
+  try {
+    await deleteReplyById(userId, commentId, replyId);
+  } catch (e) {
+    return renderRestaurantPage(res, req, restaurantId, 400, String(e));
+  }
+
+  return res.redirect(`/restaurant/${restaurantId}`);
 });
 
 export default router;

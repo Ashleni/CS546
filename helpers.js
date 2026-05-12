@@ -133,7 +133,7 @@ const exportedMethods = {
 
   checkUsername(username) {
     username = this.checkString(username, "Username");
-    let usernameRegex = /^[A-Za-z0-9_.]{3,30}$/; // Taken from https://www.sitepoint.com/using-regular-expressions-to-check-string-length/
+    let usernameRegex = /^(?=.*[A-Za-z])[A-Za-z0-9_.]{3,30}$/; // Taken from https://www.sitepoint.com/using-regular-expressions-to-check-string-length/
     if (!usernameRegex.test(username)) {
       throw `Error: Username must be 3-30 characters and can only contain alphanumeric characters, underscores, or periods`;
     }

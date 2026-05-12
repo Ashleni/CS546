@@ -1,10 +1,10 @@
 <main>
     {{#if adminUser}}
         <h1>Admin Features</h1>
-        <div id="error" class="formError">{{error}}</div>
+      <div id="error" class="formError" {{#unless error}}style="display:none"{{/unless}}>{{error}}</div> <!-- Please stop deleting this, this line prevents the empty error box bug. --> 
         <h2>Create</h2>              
             {{!-- Create --}}
-            <div id="createRestaurantDiv" class="create-form-container">
+            <div id="createRestaurantDiv">
                 <form action="/admin/createRestaurant" method="POST" name="createRestaurant-form" id="createRestaurant-form">
                 <label for="newRestaurantName">
                     Restaurant Name
@@ -118,7 +118,7 @@
                         <form action="/admin/restaurant/{{this._id}}/outdatedReviews" method="POST" name="deleteRestaurant-form-{{this._id}}" id="deleteRestaurant-form-{{this._id}}">
                             {{#if this.outdatedReviews.length}}
                                 {{#each this.outdatedReviews}}
-                                <section class="single-outdated-review">
+                                <section>
                                     <span><strong>{{this.date}}</strong></span>
                                     <span>{{this.rating}}</span>
                                     <hr>
@@ -162,4 +162,6 @@
             }
         }
     </script>
+    <script src="/public/js/admin.js"></script>
+
 </main>

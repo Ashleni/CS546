@@ -229,3 +229,19 @@ button[type="submit"] {
     gap: 0.3rem;         
     cursor: pointer;
 }
+
+.comment-header {
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
+}
+
+
+.comment-actiosn {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+  margin-top: 0.4rem;
+  margin-bottom: 0.4rem;
+}

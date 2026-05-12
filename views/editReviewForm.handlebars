@@ -1,7 +1,7 @@
-<main class="review-form-page"> 
-  <a href= "/restaurant/{{restaurant._id}}" class= "back-link">Back to {{restaurant.name}}</a> 
+<main> 
+  <a href= "/restaurant/{{restaurant._id}}">Back to {{restaurant.name}}</a> 
   <h1> Edit Your Review </h1>
-  <p class="restaurant-subtitle">{{restaurant.name}} - {{restaurant.boro}}</p>
+  <p>{{restaurant.name}} - {{restaurant.boro}}</p>
 
   {{#if error}}
     <div class="form-error-banner">{{error}}</div>  
@@ -45,12 +45,12 @@
  
     <section class= "form-section">
       <h2>Photos  
-        <span class= "optional-label">(optional, up to 3)</span>
+        <span>(optional, up to 3)</span>
         </h2> 
 
       {{#if review.photos.length}}
-        <p class= "field-hint">Current photos (uploading new ones will replace these):</p>
-        <div class= "photo-preview-row">
+        <p>Current photos (uploading new ones will replace these):</p>
+        <div>
           {{#each review.photos}}
             <img
               src= "data:{{this.mimetype}};base64,{{this.data}}"
@@ -63,12 +63,12 @@
 
       <label for= "photos">Upload new images (replaces existing):</label>
       <input type= "file" name= "photos" id= "photos" accept="image/*" multiple>
-      <p class= "field-hint">Max 3 images | 5 MB each | JPEG / PNG / WEBP</p>
+      <p>Max 3 images | 5 MB each | JPEG / PNG / WEBP</p>
     </section>
 
-    <section class= "form-section survey-section">
+    <section class= "form-section">
       <h2>Hygiene and Experience Survey</h2>
-      <p class= "survey-intro">
+      <p>
         Update your answers below. Your responses are public on the restaurant's profile.
       </p>
 
@@ -84,13 +84,18 @@
                     type="radio"
                     name="{{../key}}"
                     value="{{this.value}}"
+
+
+                    {{#if (eq this.value (lookup @root.review.survey ../key))}} checked {{/if}}
                     required
+
+
                   >
                   <span>{{this.label}}</span>
                 </label>
               {{/each}}
             </div>
-            <p class= "scale-hint">1 = Very poor | 5 = Excellent</p>
+            <p>1 = Very poor | 5 = Excellent</p>
 
           {{else}}
             <div class= "choice-options">
@@ -100,7 +105,14 @@
                     type= "radio"
                     name= "{{../key}}"
                     value= "{{this.value}}"
+
+
+
+                    {{#if (eq this.value (lookup @root.review.survey ../key))}} checked {{/if}}
                     required
+                  
+                  
+                  
                   >
                   {{this.label}}
                 </label>

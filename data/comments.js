@@ -261,6 +261,37 @@ export const addReplyByCommentId = async (userId, restaurantId, parentCommentId,
   return reply;
 };
 
+export const deleteReplyById = async (userId, parentCommentId, replyId) => {
+  userId = helpers.checkId(userId);
+  parentCommentId = helpers.checkId(parentCommentId);
+  replyId = helpers.checkId(replyId);
+
+  const commentCollection = await comments();
+  const restaurantCollection = await restaurants();
+
+  const deletionInfo = await commentCollection.findOneAndDelete({
+    _id: new ObjectId(replyId),
+    userID: new ObjectId(userId),
+    parentId: new ObjectId(parentCommentId),
+  });
+
+  if (!deletionInfo) {
+    throw `Could not delete reply, it may not exist or belong to you.`;
+  }
+
+  await commentCollection.updateOne(
+    { _id: new ObjectId(parentCommentId) },
+    { $pull: { replies: { _id: replyId } } }
+  );
+
+  await restaurantCollection.updateOne(
+    { _id: deletionInfo.restaurantID },
+    { $pull: { userComments: replyId } }
+  );
+
+  return { _id: replyId, deleted: true };
+};
+
 export const deleteCommentById = async (commentId) => {
   commentId = helpers.checkId(commentId);
 

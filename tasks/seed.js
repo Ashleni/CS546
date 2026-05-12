@@ -96,18 +96,79 @@ const main = async () => {
   const restaurant218ID = new ObjectId();
 
   // reviews
-  const AlanReview1 = new ObjectId(); // old mill cafe
-  const CharlieReview1 = new ObjectId(); // old mill cafe
-  const AnnaReview1 = new ObjectId(); // lin & daughters
-  const JohnReview1 = new ObjectId(); // lin & daughters
-  const AlanReview2 = new ObjectId(); // lin & daughters
-  const AlanReview3 = new ObjectId(); // 218 restaurant
+  const AlanReview1ID = new ObjectId();   // old mill cafe
+  const CharlieReview1ID = new ObjectId(); // old mill cafe
+  const AnnaReview1ID = new ObjectId();   // lin & daughters  
+  const JohnReview1ID = new ObjectId();   // lin & daughters
+  const AlanReview2ID = new ObjectId();   // lin & daughters
+  const AlanReview3ID = new ObjectId();   // 218 restaurant  
 
   // comments
-  const AlanComment1 = new ObjectId(); // old mill cafe
-  const AnnaComment1 = new ObjectId(); // jonhs pizzeria
-  const AlanComment2 = new ObjectId(); // jonhs pizzeria; reply to Anna
-  const JohnComment1 = new ObjectId(); // jonhs pizzeria; reply to Anna
+  const AlanComment1ID = new ObjectId();  // old mill cafe
+  const AnnaComment1ID = new ObjectId();  // john's pizzeria
+  const AlanComment2ID = new ObjectId();  // reply to Anna
+  const JohnComment1ID = new ObjectId();  // reply to Anna
+
+
+  let survey5 = {
+    diningAreaCleanliness: 5,
+    restroomCleanliness: 5,
+    staffHygiene: 5,
+    overallExperience: 5,
+    foodHandlingPractices: "yes",
+    foodTemperature: "yes",
+    pestSighting: "no",
+  };
+  let survey4 = {
+    diningAreaCleanliness: 4,
+    restroomCleanliness: 4,
+    staffHygiene: 4,
+    overallExperience: 4,
+    foodHandlingPractices: "yes",
+    foodTemperature: "yes",
+    pestSighting: "no",
+  };
+  let survey3 = {
+    diningAreaCleanliness: 3,
+    restroomCleanliness: 3,
+    staffHygiene: 3,
+    overallExperience: 3,
+    foodHandlingPractices: "not_observed",
+    foodTemperature: "yes",
+    pestSighting: "no",
+  };
+  let survey2 = {
+    diningAreaCleanliness: 2,
+    restroomCleanliness: 2,
+    staffHygiene: 2,
+    overallExperience: 2,
+    foodHandlingPractices: "no",
+    foodTemperature: "no",
+    pestSighting: "yes",
+  };
+
+  let AlanReplyEmbedded = {
+    _id: AlanComment2ID.toString(),
+    userID: AlanTuringID,
+    username: "alan.turing",
+    restaurantID: JohnsPizzeriaID,
+    message: "Yikes! I also saw one today!! I hope this isn't a trend...",
+    date: "09/18/2025",
+    replies: [],
+    parentId: AnnaComment1ID,
+    edited: true,
+  };
+  let JohnReplyEmbedded = {
+    _id: JohnComment1ID.toString(),
+    userID: JohnMillerID,
+    username: "doglover78",
+    restaurantID: JohnsPizzeriaID,
+    message: "Broooo, 2 rats ran across my table last night when I was getting food. All I wanted was a quick slice after a night out!",
+    date: "09/18/2025",
+    replies: [],
+    parentId: AnnaComment1ID,
+    edited: false,
+  };
 
   console.log("Seeding database...");
 
@@ -125,8 +186,8 @@ const main = async () => {
       passwordHashed: await helpers.hashPassword("TuringMachine@1936"), // stores the hashed password
       publicFollowingRestaurants: [],
       privateFollowingRestaurants: [restaurant218ID],
-      reviewsCompleted: [AlanReview1, AlanReview2, AlanReview3],
-      commentsPosted: [AlanComment1, AlanComment2],
+      reviewsCompleted: [AlanReview1ID, AlanReview2ID, AlanReview3ID],
+      commentsPosted: [AlanComment1ID, AlanComment2ID],
       notifications: [
         {
           _id: new ObjectId(),
@@ -153,7 +214,7 @@ const main = async () => {
       passwordHashed: await helpers.hashPassword("foodie_NYC612"), // stores the hashed password
       publicFollowingRestaurants: [],
       privateFollowingRestaurants: [],
-      reviewsCompleted: [CharlieReview1],
+      reviewsCompleted: [CharlieReview1ID],
       commentsPosted: [],
       notifications: [],
     },
@@ -187,8 +248,8 @@ const main = async () => {
       passwordHashed: await helpers.hashPassword("Password123!"), // stores the hashed password
       publicFollowingRestaurants: [],
       privateFollowingRestaurants: [JohnsPizzeriaID, TGFlavorsID],
-      reviewsCompleted: [AnnaReview1],
-      commentsPosted: [AnnaComment1],
+      reviewsCompleted: [AnnaReview1ID],
+      commentsPosted: [AnnaComment1ID],
       notifications: [
         {
           _id: new ObjectId(),
@@ -216,8 +277,8 @@ const main = async () => {
       passwordHashed: await helpers.hashPassword("ILoveDogs!89"), // stores the hashed password
       publicFollowingRestaurants: [JohnsPizzeriaID, SNAFUID],
       privateFollowingRestaurants: [],
-      reviewsCompleted: [JohnReview1],
-      commentsPosted: [JohnComment1],
+      reviewsCompleted: [JohnReview1ID],
+      commentsPosted: [JohnComment1ID],
       notifications: [
         {
           _id: new ObjectId(),
@@ -249,9 +310,9 @@ const main = async () => {
       phone: "9296229278",
       cuisine: "coffee/tea",
       inspections: [], // example with no inspections
-      userReviews: [AlanReview1, CharlieReview1],
-      userComments: [AlanComment1],
-      isClosed: false,
+      userReviews: [AlanReview1ID, CharlieReview1ID],
+      userComments: [AlanComment1ID],
+      isClosed: true,
       closedVotes: [],
       reopenVotes: [],
     },
@@ -289,7 +350,7 @@ const main = async () => {
         },
       ],
       userReviews: [],
-      userComments: [AnnaComment1],
+      userComments: [AnnaComment1ID, AlanComment2ID, JohnComment1ID],
       isClosed: false,
       closedVotes: [],
       reopenVotes: [],
@@ -298,15 +359,11 @@ const main = async () => {
       _id: LinDaughtersID,
       name: "Lin & Daughters",
       boro: "manhattan",
-      address: {
-        building: "181",
-        street: "West 4 Street",
-        zip: "10014",
-      },
+      address: { building: "181", street: "West 4 Street", zip: "10014" },
       phone: "5166735686",
       cuisine: "chinese",
       inspections: [],
-      userReviews: [AnnaReview1, JohnReview1, AlanReview2],
+      userReviews: [AnnaReview1ID, JohnReview1ID, AlanReview2ID],
       userComments: [],
       isClosed: false,
       closedVotes: [],
@@ -345,7 +402,55 @@ const main = async () => {
           grade: "B",
         },
       ],
-      userReviews: [AlanReview3],
+      userReviews: [AlanReview3ID],
+      userComments: [],
+      isClosed: false,
+      closedVotes: [],
+      reopenVotes: [],
+    },
+    {
+      _id: TGFlavorsID,
+      name: "TG Flavors",
+      boro: "bronx",
+      address: { building: "1032", street: "Southern Boulevard", zip: "10459" },
+      phone: "7186231234",
+      cuisine: "caribbean",
+      inspections: [
+        {
+          _id: new ObjectId(),
+          inspectionDate: "06/15/2025",
+          action: "No violations were recorded at the time of this inspection.",
+          violationCode: "",
+          violationDescription: "",
+          criticalFlag: "",
+          grade: "A",
+        },
+      ],
+      userReviews: [],
+      userComments: [],
+      isClosed: false,
+      closedVotes: [],
+      reopenVotes: [],
+    },
+    {
+      _id: SNAFUID,
+      name: "SNAFU Bar & Grill",
+      boro: "brooklyn",
+      address: { building: "212", street: "DeKalb Avenue", zip: "11205" },
+      phone: "7184561234",
+      cuisine: "american",
+      inspections: [
+        {
+          _id: new ObjectId(),
+          inspectionDate: "09/05/2025",
+          action: "No violations were recorded at the time of this inspection.",
+          violationCode: "",
+          violationDescription: "",
+          criticalFlag: "",
+          grade: "A",
+        },
+      ],
+      userReviews: [],
       userComments: [],
       isClosed: false,
       closedVotes: [],
@@ -367,46 +472,100 @@ const main = async () => {
 
   const reviewData = [
     {
-      _id: CharlieReview1,
+      _id: CharlieReview1ID,
       userID: CharlieDavisID,
+      username: "charlieinnyc",
       restaurantID: OldMillCafeID,
-      rating: 4.5, // ratings are out of 5
+      rating: 4.5,
+      reviewText: "Great little cafe!",
+      survey: survey4,
+      photos: [],
       date: "11/25/2025",
+      edited: false,
+      flagged: false,
+      currRestaurantGrade: null,
+      upvotes: [],
+      downvotes: [],
     },
     {
-      _id: AlanReview1,
+      _id: AlanReview1ID,
       userID: AlanTuringID,
+      username: "alan.turing",
       restaurantID: OldMillCafeID,
-      rating: 5.0, // ratings are out of 5
+      rating: 5.0,
+      reviewText:  "Highly recommend!",
+      survey: survey5,
+      photos: [],
       date: "04/13/2026",
+      edited: false,
+      flagged: false,
+      currRestaurantGrade: null,
+      upvotes: [CharlieDavisID],
+      downvotes: [],
     },
     {
-      _id: AnnaReview1,
+      _id: AnnaReview1ID,
       userID: AnnaReedID,
+      username: "reedanna567",
       restaurantID: LinDaughtersID,
-      rating: 5.0, // ratings are out of 5
-      date: "11/03/2024",
+      rating: 5.0,
+      reviewText: "My favorite spot to go to.",
+      survey: survey5,
+      photos: [],
+      date: "04/01/2023",
+      edited: false,
+      flagged: false,
+      currRestaurantGrade: null,
+      upvotes: [JohnMillerID, AlanTuringID],
+      downvotes: [],
     },
     {
-      _id: JohnReview1,
+      _id: JohnReview1ID,
       userID: JohnMillerID,
+      username: "doglover78",
       restaurantID: LinDaughtersID,
-      rating: 4.5, // ratings are out of 5
+      rating: 4.5,
+      reviewText: "Would be a 5 if they gave fortune cookies.",
+      survey: survey4,
+      photos: [],
       date: "01/31/2025",
+      edited: false,
+      flagged: false,
+      currRestaurantGrade: null,
+      upvotes: [],
+      downvotes: [],
     },
     {
-      _id: AlanReview2,
+      _id: AlanReview2ID,
       userID: AlanTuringID,
+      username: "alan.turing",
       restaurantID: LinDaughtersID,
-      rating: 3.0, // ratings are out of 5
+      rating: 3.0,
+      reviewText: "Not my cup of tea.",
+      survey: survey3,
+      photos: [],
       date: "02/13/2025",
+      edited: false,
+      flagged: false,
+      currRestaurantGrade: null,
+      upvotes: [],
+      downvotes: [],
     },
     {
-      _id: AlanReview3,
+      _id: AlanReview3ID,
       userID: AlanTuringID,
+      username: "alan.turing",
       restaurantID: restaurant218ID,
-      rating: 2.0, // ratings are out of 5
+      rating: 2.0,
+      reviewText: "The kitchen area looked a bit unclean.",
+      survey: survey2,
+      photos: [],
       date: "12/25/2025",
+      edited: false,
+      flagged: false,
+      currRestaurantGrade: "C",
+      upvotes: [],
+      downvotes: [],
     },
   ];
 
@@ -418,43 +577,47 @@ const main = async () => {
 
   const commentData = [
     {
-      _id: AlanComment1,
+      _id: AlanComment1ID,
       userID: AlanTuringID,
       username: "alan.turing",
       restaurantID: OldMillCafeID,
       message: "This place is awesome! Their scones are to die for!",
       date: "04/12/2026",
       replies: [],
+      parentId: null,
       edited: false,
     },
     {
-      _id: AnnaComment1,
+      _id: AnnaComment1ID,
       userID: AnnaReedID,
       username: "reedanna567",
       restaurantID: JohnsPizzeriaID,
       message: "I saw a rat last week in the kitchen...",
       date: "09/02/2025",
-      replies: [AlanComment2, JohnComment1],
+      replies: [AlanReplyEmbedded, JohnReplyEmbedded],
+      parentId: null,
       edited: false,
     },
     {
-      _id: AlanComment2,
+      _id: AlanComment2ID,
       userID: AlanTuringID,
       username: "alan.turing",
       restaurantID: JohnsPizzeriaID,
       message: `Yikes! I also saw one today!! I hope this isn't a trend...`,
       date: "09/18/2025",
       replies: [],
+      parentId: AnnaComment1ID,
       edited: true,
     },
     {
-      _id: JohnComment1,
+      _id: JohnComment1ID,
       userID: JohnMillerID,
       username: "doglover78",
       restaurantID: JohnsPizzeriaID,
       message: `Broooo, 2 rats ran across my table last night when I was getting food. All I wanted was a quick slice after a night out!`,
       date: "09/18/2025",
       replies: [],
+      parentId: AnnaComment1ID,
       edited: false,
     },
   ];

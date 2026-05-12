@@ -45,25 +45,23 @@ export const inboxAlertReviewFlags = async (restaurantId) => {
 
     let count = 0;
 
-    for (const review of reviewsList) {
-        if (review.flagged) {
-            count += 1;
-        }
-    }
+    let flaggedReviews = reviewsList.filter(r => r.flagged);
 
     // skip the rest if none
-    if (count == 0) return;
+    if (flaggedReviews.length === 0) return;
 
-    let notif = null;
+    let notif = flaggedReviews.length === 1  ? `${restaurant.name} has 1 outdated review` : `${restaurant.name} has ${flaggedReviews.length} outdated reviews`;
 
-    if (count > 1) {
-        notif = `${restaurant.name} has 1+ outdated reviews`;
-    }
-    else {
-        notif = `${restaurant.name} has 1 outdated review`;
-    }
-
-    const notification = helpers.createNotification("Flagged Reviews", notif);
+    const notification = {
+        _id: new ObjectId(),
+        title: "Flagged Reviews",
+        message: notif,
+        snippet: notif.substring(0, 40) + "...",
+        date: helpers.currDate(),
+        viewed: false,
+        restaurantId: restaurantId,   // stored for live lookup in inbox route
+        restaurantName: restaurant.name,
+    };
 
     // exclude messages that are the same
 

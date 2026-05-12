@@ -3,6 +3,7 @@ import * as restaurants from "../data/restaurants.js";
 const router = Router();
 import { loginGuard } from "../middleware.js";
 import userData from "../data/users.js";
+import { getReviewsByRestaurant } from "../data/reviews.js";
 
 router.route("/inbox").get(loginGuard, async (req, res) => {
   try {
@@ -105,9 +106,32 @@ router.route("/inbox/:id").get(loginGuard, async (req, res) => {
       notifications: userNotifications,
     });
 
+
+    let flaggedReviews = [];
+    let restaurantLink = null;
+
+    if (notification.restaurantId) {
+      try {
+        let rid = notification.restaurantId.toString();
+        let reviewsData = await getReviewsByRestaurant(rid);
+        flaggedReviews = reviewsData.filter(r => r.flagged).map(r => ({
+            username: r.username,
+            date: r.date,
+            rating: r.rating,
+            reviewText: r.reviewText,
+          }));
+        let restaurant = await restaurants.getRestaurantById(rid);
+        restaurantLink = { id: rid, name: restaurant.name };
+      } catch (_) {}
+    }
+
+
+
     return res.render("notification", {
       title: notification.title,
       notification,
+      flaggedReviews,
+      restaurantLink,
     });
   } catch (e) {
     return res.status(404).render("error", { errorClass: "error", error: e });

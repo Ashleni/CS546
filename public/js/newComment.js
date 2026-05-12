@@ -16,7 +16,15 @@
     return $('<div>').text(String(str)).html();
   }
 
-  function buildReplyMarkup(reply) {
+  function buildReplyMarkup(reply, commentId) {
+    let deleteBtn = '';
+    if (reply.username === currentUser) {
+      deleteBtn =
+        '<form action="/restaurant/' + esc(restaurantId) + '/comment/' + esc(commentId) + '/reply/' + esc(reply._id) + '/delete" method="POST">' +
+          '<button type="submit">Delete Reply</button>' +
+        '</form>';
+    }
+
     let editBtn = '';
     if (reply.username === currentUser) {
       editBtn =
@@ -25,12 +33,16 @@
         '</form>';
     }
 
+    let actionRow = (deleteBtn || editBtn)
+      ? '<div class="comment-actiosn">' + deleteBtn + editBtn + '</div>'
+      : '';
+
     return $(
       '<li>' +
-        '<span><strong><a href="/profile/' + esc(reply.username) + '">' + esc(reply.username) + '</a></strong></span>' +
+        '<span><strong><a href="/profile/' + esc(reply.username) + '">' + esc(reply.username) + '</a></strong> | </span>' +
         '<span>' + esc(reply.date) + '</span>' +
         '<p>' + esc(reply.message) + '</p>' +
-        editBtn +
+        actionRow +
       '</li>'
     );
   }
@@ -96,7 +108,7 @@
         }
 
         let repliesList = repliesDiv.find('ul').first();
-        repliesList.append(buildReplyMarkup(responseMessage.reply));
+        repliesList.append(buildReplyMarkup(responseMessage.reply, commentId));
         form.get(0).reset();
       },
       function (xhr) {
@@ -174,12 +186,12 @@
           return $('<div>').text(String(str)).html();
         }
 
+        let replyFormId = 'newReply-form-' + esc(c._id);
         let replyForm =
-          '<form action="/restaurant/' + esc(restaurantId) + '/comment/' + esc(c._id) + '/reply" method="POST" class="reply-form" data-comment-id="' + esc(c._id) + '">' +
+          '<form action="/restaurant/' + esc(restaurantId) + '/comment/' + esc(c._id) + '/reply" method="POST" class="reply-form" data-comment-id="' + esc(c._id) + '" id="' + replyFormId + '">' +
             '<label>Reply to this comment' +
               '<textarea name="reply" placeholder="What\'s on your mind?"></textarea>' +
             '</label>' +
-            '<button type="submit">Post</button>' +
             '<div class="reply-error formError"></div>' +
           '</form>';
 
@@ -201,16 +213,13 @@
             '</form>';
         }
 
+        let actionRow =
+          '<div class="comment-actiosn">' +'<button type="submit" form="' + replyFormId + '">Post</button>' + deleteBtn + editBtn + '</div>';
+
+
         let newComment = $(
           '<section class="single-comment" id="comment-' + esc(c._id) + '">' +
-            '<span><strong><a href="/profile/' + esc(c.username) + '">' + esc(c.username) + '</a></strong></span>' +
-            '<span>' + esc(c.date) + '</span>' +
-            '<p>' + esc(c.message) + '</p>' +
-            replyForm +
-            deleteBtn +
-            editBtn +
-            '<hr>' +
-          '</section>'
+            '<span><strong><a href="/profile/' + esc(c.username) + '">' + esc(c.username) + '</a></strong></span>' + '<span> | </span>' + '<span>' + esc(c.date) + '</span>' + '<p>' + esc(c.message) + '</p>' +replyForm + actionRow +'<hr>' +'</section>'
         );
 
         $('#no-comments-msg').remove();

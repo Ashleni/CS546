@@ -242,7 +242,7 @@ export const addInspection = async (
     if (!validFlags.includes(criticalFlag))
       throw `Error: criticalFlag must be either 'Critical' or 'Not Critical'!`;
   } else {
-    throw "Error: criticalFlag is missing!";
+    criticalFlag = "";
   }
 
   // grade

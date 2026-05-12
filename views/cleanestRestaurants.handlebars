@@ -3,11 +3,11 @@
         Top 25 Cleanest Restaurants
     </h1>
 
-    <a class="search" href="/searchCleanest">
+    <a href="/searchCleanest">
         Go Back
     </a>
     {{#if restaurantsData}}
-        <h2 class="searchTerms">
+        <h2>
             Showing results for 
             {{#if name}}{{name}}{{else}}restaurants{{/if}}
             {{#if boro}}in {{boro}}{{else}}{{/if}}
@@ -20,7 +20,7 @@
                 <a href="/restaurant/{{this.restaurant._id}}">
                     {{this.restaurant.name}}<br>
                 </a>
-                <p class="resultsDetails">
+                <p>
                     Borough: {{#if this.restaurant.boro}}{{this.restaurant.boro}}{{else}}Not Listed{{/if}}<br>
                     Cuisine: {{#if this.restaurant.cuisine}}{{this.restaurant.cuisine}}{{else}}Not Listed{{/if}}<br>
                     {{this.consecutive}} consecutive A rating{{#unless (eq this.consecutive 1)}}s{{/unless}}

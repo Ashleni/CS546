@@ -5,7 +5,7 @@
 
     <p>Find restaurants by name, borough, and/or cuisine type!</p>
 
-    <div id="error" class="formError">{{error}}</div>
+      <div id="error" class="formError" {{#unless error}}style="display:none"{{/unless}}>{{error}}</div> <!-- Please stop deleting this, this line prevents the empty error box bug. --> 
 
     <form action="/searchResults" method="post" id="search-form">
         <label for="name">
