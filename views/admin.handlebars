@@ -4,7 +4,7 @@
       <div id="error" class="formError" {{#unless error}}style="display:none"{{/unless}}>{{error}}</div> <!-- Please stop deleting this, this line prevents the empty error box bug. --> 
         <h2>Create</h2>              
             {{!-- Create --}}
-            <div id="createRestaurantDiv">
+            <div id="createRestaurantDiv" class="create-form-container">
                 <form action="/admin/createRestaurant" method="POST" name="createRestaurant-form" id="createRestaurant-form">
                 <label for="newRestaurantName">
                     Restaurant Name
@@ -118,7 +118,7 @@
                         <form action="/admin/restaurant/{{this._id}}/outdatedReviews" method="POST" name="deleteRestaurant-form-{{this._id}}" id="deleteRestaurant-form-{{this._id}}">
                             {{#if this.outdatedReviews.length}}
                                 {{#each this.outdatedReviews}}
-                                <section>
+                                <section class="single-outdated-review">
                                     <span><strong>{{this.date}}</strong></span>
                                     <span>{{this.rating}}</span>
                                     <hr>
@@ -133,8 +133,8 @@
                     <div id="deleteRestaurantDiv-{{this._id}}" class="form-container">
                         <form action="/admin/restaurant/{{this._id}}/delete" method="POST" name="delete-form-{{this._id}}" id="delete-form-{{this._id}}">
                             <label for="restaurantDeletionId-{{this._id}}">
-                                <h4>Delete Restaurant</h4>
-                                <p>Type Id to confirm : {{this._id}}</p>
+                                <span>Delete Restaurant</span>
+                                <span>Type Id to confirm : {{this._id}}</span>
                                 <input type="text" name="restaurantDeletionId" id="restaurantDeletionId-{{this._id}}" placeholder="{{this._id}}" required>
                             </label>
                             <button type="submit" name="deleteRestaurantButton" id="deleteRestaurantButton-{{this._id}}">Confirm deletion with restaurant id</button> 

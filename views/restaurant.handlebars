@@ -157,7 +157,7 @@
     <!-- Quick Glance Inspection Letter Grade Timeline -->
 
     {{#if timelineInspections.length}}
-    <div class="grade-timeline" aria-label="Inspection grade history">
+    <div class="grade-timeline">
       {{#each timelineInspections}}
         <div class="grade-chip grade-{{this.grade}}">
           <span class="grade-chip-letter">{{this.grade}}</span>
@@ -229,7 +229,7 @@
   </p>
 
   <section class="inspection-history">
-    <h3>Inspection History</h3>
+    <h2>Inspection History</h2>
     {{#if restaurant.inspections.length}}
     <ul>
       {{#each restaurant.inspections}}
@@ -273,9 +273,9 @@
     {{#if publicReviews.length}}
       {{#each publicReviews}}
         <article >
-          <header >
-            <span ><strong><a href="/profile/{{this.username}}">{{this.username}}</a></strong></span>
-            <span class= "review-rating">&#9733; {{this.rating}}/5 | </span>
+          <header>
+            <h3><span ><strong><a href="/profile/{{this.username}}">{{this.username}}</a></strong></span>
+            <span class= "review-rating">&#9733; {{this.rating}}/5 | </span> </h3>
             <span class= "review-date">{{this.date}}{{#if this.edited}} (edited){{/if}}</span>
           </header>
  

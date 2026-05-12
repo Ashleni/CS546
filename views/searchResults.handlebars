@@ -3,12 +3,12 @@
         Restaurants Found
     </h1>
 
-    <h3 class="searchTerms">
+    <h2 class="searchTerms">
         Showing results for 
         {{#if name}}{{name}}{{else}}restaurants{{/if}}
         {{#if boro}}in {{boro}}{{else}}{{/if}}
         {{#if cuisine}}with cuisine type {{cuisine}}{{else}}{{/if}}
-    </h3>
+    </h2>
 
     <div class="results">
         {{#each restaurantsData}}
